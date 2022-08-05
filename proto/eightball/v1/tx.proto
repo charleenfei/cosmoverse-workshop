@@ -1,0 +1,22 @@
+syntax = "proto3";
+package eightball.v1;
+
+// this line is used by starport scaffolding # proto/tx/import
+
+option go_package = "github.com/charleenfei/cosmoverse-workshop/x/eightball/types";
+
+// Msg defines the Msg service.
+service Msg {
+      rpc FeelingLucky(MsgFeelingLucky) returns (MsgFeelingLuckyResponse);
+// this line is used by starport scaffolding # proto/tx/rpc
+}
+
+message MsgFeelingLucky {
+  string creator = 1;
+  string offering = 2;
+}
+
+message MsgFeelingLuckyResponse {
+}
+
+// this line is used by starport scaffolding # proto/tx/message
