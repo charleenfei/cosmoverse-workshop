@@ -30409,6 +30409,8 @@ paths:
       tags:
         - Query
 definitions:
+  charleenfei.icqics20cosmoverseworkshop.eightball.MsgFeelingLuckyResponse:
+    type: object
   charleenfei.icqics20cosmoverseworkshop.eightball.Params:
     type: object
     description: Params defines the parameters for the module.
