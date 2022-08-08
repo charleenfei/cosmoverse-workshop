@@ -10,7 +10,9 @@ import (
 func (k msgServer) FeelingLucky(goCtx context.Context, msg *types.MsgFeelingLucky) (*types.MsgFeelingLuckyResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	// TODO: Handling the message
+	// check if the offering is enough
+		// send icq request (SendPacket)
+	// if offering is enough
 	_ = ctx
 
 	return &types.MsgFeelingLuckyResponse{}, nil
