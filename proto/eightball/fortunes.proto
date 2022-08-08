@@ -1,0 +1,12 @@
+syntax = "proto3";
+package charleenfei.icqics20cosmoverseworkshop.eightball;
+
+option go_package = "github.com/charleenfei/icq-ics20-cosmoverse-workshop/x/eightball/types";
+
+message Fortunes {
+  string owner = 1; 
+  string price = 2; 
+  string fortune = 3; 
+  
+}
+
