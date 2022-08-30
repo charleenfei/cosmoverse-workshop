@@ -3,7 +3,7 @@ package types_test
 import (
 	"testing"
 
-	"github.com/charleenfei/icq-ics20-cosmoverse-workshop/x/eightball/types"
+	"github.com/charleenfei/cosmoverse-workshop/x/eightball/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -22,7 +22,7 @@ func TestGenesisState_Validate(t *testing.T) {
 			desc: "valid genesis state",
 			genState: &types.GenesisState{
 
-				FortunesList: []types.Fortunes{
+				FortunesList: []types.Fortune{
 					{
 						Owner: "0",
 					},
@@ -37,7 +37,7 @@ func TestGenesisState_Validate(t *testing.T) {
 		{
 			desc: "duplicated fortunes",
 			genState: &types.GenesisState{
-				FortunesList: []types.Fortunes{
+				FortunesList: []types.Fortune{
 					{
 						Owner: "0",
 					},

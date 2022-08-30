@@ -5,7 +5,7 @@ import (
 
 	"github.com/tendermint/tendermint/libs/log"
 
-	"github.com/charleenfei/icq-ics20-cosmoverse-workshop/x/eightball/types"
+	"github.com/charleenfei/cosmoverse-workshop/x/eightball/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"

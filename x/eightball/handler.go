@@ -3,8 +3,8 @@ package eightball
 import (
 	"fmt"
 
-	"github.com/charleenfei/icq-ics20-cosmoverse-workshop/x/eightball/keeper"
-	"github.com/charleenfei/icq-ics20-cosmoverse-workshop/x/eightball/types"
+	"github.com/charleenfei/cosmoverse-workshop/x/eightball/keeper"
+	"github.com/charleenfei/cosmoverse-workshop/x/eightball/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )

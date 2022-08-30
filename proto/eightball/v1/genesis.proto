@@ -1,0 +1,16 @@
+syntax = "proto3";
+package eightball.v1;
+
+import "gogoproto/gogo.proto";
+import "eightball/v1/params.proto";
+import "eightball/v1/fortunes.proto";
+// this line is used by starport scaffolding # genesis/proto/import
+
+option go_package = "github.com/charleenfei/cosmoverse-workshop/x/eightball/types";
+
+// GenesisState defines the eightball module's genesis state.
+message GenesisState {
+  Params params = 1 [(gogoproto.nullable) = false];
+  repeated Fortune fortunes_list = 2 [(gogoproto.nullable) = false];
+  // this line is used by starport scaffolding # genesis/proto/state
+}

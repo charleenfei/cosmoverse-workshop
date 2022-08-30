@@ -3,8 +3,8 @@ package keeper
 import (
 	"testing"
 
-	"github.com/charleenfei/icq-ics20-cosmoverse-workshop/x/eightball/keeper"
-	"github.com/charleenfei/icq-ics20-cosmoverse-workshop/x/eightball/types"
+	"github.com/charleenfei/cosmoverse-workshop/x/eightball/keeper"
+	"github.com/charleenfei/cosmoverse-workshop/x/eightball/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/store"

@@ -98,16 +98,16 @@ import (
 	monitoringpkeeper "github.com/tendermint/spn/x/monitoringp/keeper"
 	monitoringptypes "github.com/tendermint/spn/x/monitoringp/types"
 
-	"github.com/charleenfei/icq-ics20-cosmoverse-workshop/docs"
-	eightballmodule "github.com/charleenfei/icq-ics20-cosmoverse-workshop/x/eightball"
-	eightballmodulekeeper "github.com/charleenfei/icq-ics20-cosmoverse-workshop/x/eightball/keeper"
-	eightballmoduletypes "github.com/charleenfei/icq-ics20-cosmoverse-workshop/x/eightball/types"
+	"github.com/charleenfei/cosmoverse-workshop/docs"
+	eightballmodule "github.com/charleenfei/cosmoverse-workshop/x/eightball"
+	eightballmodulekeeper "github.com/charleenfei/cosmoverse-workshop/x/eightball/keeper"
+	eightballmoduletypes "github.com/charleenfei/cosmoverse-workshop/x/eightball/types"
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 )
 
 const (
 	AccountAddressPrefix = "cosmos"
-	Name                 = "icq-ics20-cosmoverse-workshop"
+	Name                 = "cosmoverse-workshop"
 )
 
 // this line is used by starport scaffolding # stargate/wasm/app/enabledProposals

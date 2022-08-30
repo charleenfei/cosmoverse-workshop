@@ -3,8 +3,8 @@ package keeper_test
 import (
 	"testing"
 
-	testkeeper "github.com/charleenfei/icq-ics20-cosmoverse-workshop/testutil/keeper"
-	"github.com/charleenfei/icq-ics20-cosmoverse-workshop/x/eightball/types"
+	testkeeper "github.com/charleenfei/cosmoverse-workshop/testutil/keeper"
+	"github.com/charleenfei/cosmoverse-workshop/x/eightball/types"
 	"github.com/stretchr/testify/require"
 )
 

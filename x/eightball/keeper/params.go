@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"github.com/charleenfei/icq-ics20-cosmoverse-workshop/x/eightball/types"
+	"github.com/charleenfei/cosmoverse-workshop/x/eightball/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 

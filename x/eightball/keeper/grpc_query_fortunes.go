@@ -3,7 +3,7 @@ package keeper
 import (
 	"context"
 
-	"github.com/charleenfei/icq-ics20-cosmoverse-workshop/x/eightball/types"
+	"github.com/charleenfei/cosmoverse-workshop/x/eightball/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
@@ -11,24 +11,24 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (k Keeper) FortunesAll(c context.Context, req *types.QueryAllFortunesRequest) (*types.QueryAllFortunesResponse, error) {
+func (k Keeper) Fortunes(c context.Context, req *types.QueryFortunesRequest) (*types.QueryFortunesResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 
-	var fortuness []types.Fortunes
+	var fortunes []types.Fortune
 	ctx := sdk.UnwrapSDKContext(c)
 
 	store := ctx.KVStore(k.storeKey)
 	fortunesStore := prefix.NewStore(store, types.KeyPrefix(types.FortunesKeyPrefix))
 
 	pageRes, err := query.Paginate(fortunesStore, req.Pagination, func(key []byte, value []byte) error {
-		var fortunes types.Fortunes
-		if err := k.cdc.Unmarshal(value, &fortunes); err != nil {
+		var fortune types.Fortune
+		if err := k.cdc.Unmarshal(value, &fortune); err != nil {
 			return err
 		}
 
-		fortuness = append(fortuness, fortunes)
+		fortunes = append(fortunes, fortune)
 		return nil
 	})
 
@@ -36,10 +36,10 @@ func (k Keeper) FortunesAll(c context.Context, req *types.QueryAllFortunesReques
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &types.QueryAllFortunesResponse{Fortunes: fortuness, Pagination: pageRes}, nil
+	return &types.QueryFortunesResponse{Fortunes: fortunes, Pagination: pageRes}, nil
 }
 
-func (k Keeper) Fortunes(c context.Context, req *types.QueryGetFortunesRequest) (*types.QueryGetFortunesResponse, error) {
+func (k Keeper) Fortune(c context.Context, req *types.QueryFortuneRequest) (*types.QueryFortuneResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
@@ -53,5 +53,5 @@ func (k Keeper) Fortunes(c context.Context, req *types.QueryGetFortunesRequest) 
 		return nil, status.Error(codes.NotFound, "not found")
 	}
 
-	return &types.QueryGetFortunesResponse{Fortunes: val}, nil
+	return &types.QueryFortuneResponse{Fortune: val}, nil
 }

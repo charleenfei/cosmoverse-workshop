@@ -18,7 +18,7 @@ import (
 	tmrand "github.com/tendermint/tendermint/libs/rand"
 	tmdb "github.com/tendermint/tm-db"
 
-	"github.com/charleenfei/icq-ics20-cosmoverse-workshop/app"
+	"github.com/charleenfei/cosmoverse-workshop/app"
 )
 
 type (

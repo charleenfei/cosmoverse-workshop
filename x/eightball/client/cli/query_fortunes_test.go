@@ -12,23 +12,23 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/charleenfei/icq-ics20-cosmoverse-workshop/testutil/network"
-	"github.com/charleenfei/icq-ics20-cosmoverse-workshop/testutil/nullify"
-	"github.com/charleenfei/icq-ics20-cosmoverse-workshop/x/eightball/client/cli"
-	"github.com/charleenfei/icq-ics20-cosmoverse-workshop/x/eightball/types"
+	"github.com/charleenfei/cosmoverse-workshop/testutil/network"
+	"github.com/charleenfei/cosmoverse-workshop/testutil/nullify"
+	"github.com/charleenfei/cosmoverse-workshop/x/eightball/client/cli"
+	"github.com/charleenfei/cosmoverse-workshop/x/eightball/types"
 )
 
 // Prevent strconv unused error
 var _ = strconv.IntSize
 
-func networkWithFortunesObjects(t *testing.T, n int) (*network.Network, []types.Fortunes) {
+func networkWithFortunesObjects(t *testing.T, n int) (*network.Network, []types.Fortune) {
 	t.Helper()
 	cfg := network.DefaultConfig()
 	state := types.GenesisState{}
 	require.NoError(t, cfg.Codec.UnmarshalJSON(cfg.GenesisState[types.ModuleName], &state))
 
 	for i := 0; i < n; i++ {
-		fortunes := types.Fortunes{
+		fortunes := types.Fortune{
 			Owner: strconv.Itoa(i),
 		}
 		nullify.Fill(&fortunes)
@@ -53,7 +53,7 @@ func TestShowFortunes(t *testing.T) {
 
 		args []string
 		err  error
-		obj  types.Fortunes
+		obj  types.Fortune
 	}{
 		{
 			desc:    "found",
@@ -82,12 +82,12 @@ func TestShowFortunes(t *testing.T) {
 				require.ErrorIs(t, stat.Err(), tc.err)
 			} else {
 				require.NoError(t, err)
-				var resp types.QueryGetFortunesResponse
+				var resp types.QueryFortuneResponse
 				require.NoError(t, net.Config.Codec.UnmarshalJSON(out.Bytes(), &resp))
-				require.NotNil(t, resp.Fortunes)
+				require.NotNil(t, resp.Fortune)
 				require.Equal(t,
 					nullify.Fill(&tc.obj),
-					nullify.Fill(&resp.Fortunes),
+					nullify.Fill(&resp.Fortune),
 				)
 			}
 		})
@@ -119,7 +119,7 @@ func TestListFortunes(t *testing.T) {
 			args := request(nil, uint64(i), uint64(step), false)
 			out, err := clitestutil.ExecTestCLICmd(ctx, cli.CmdListFortunes(), args)
 			require.NoError(t, err)
-			var resp types.QueryAllFortunesResponse
+			var resp types.QueryFortunesResponse
 			require.NoError(t, net.Config.Codec.UnmarshalJSON(out.Bytes(), &resp))
 			require.LessOrEqual(t, len(resp.Fortunes), step)
 			require.Subset(t,
@@ -135,7 +135,7 @@ func TestListFortunes(t *testing.T) {
 			args := request(next, 0, uint64(step), false)
 			out, err := clitestutil.ExecTestCLICmd(ctx, cli.CmdListFortunes(), args)
 			require.NoError(t, err)
-			var resp types.QueryAllFortunesResponse
+			var resp types.QueryFortunesResponse
 			require.NoError(t, net.Config.Codec.UnmarshalJSON(out.Bytes(), &resp))
 			require.LessOrEqual(t, len(resp.Fortunes), step)
 			require.Subset(t,
@@ -149,7 +149,7 @@ func TestListFortunes(t *testing.T) {
 		args := request(nil, 0, uint64(len(objs)), true)
 		out, err := clitestutil.ExecTestCLICmd(ctx, cli.CmdListFortunes(), args)
 		require.NoError(t, err)
-		var resp types.QueryAllFortunesResponse
+		var resp types.QueryFortunesResponse
 		require.NoError(t, net.Config.Codec.UnmarshalJSON(out.Bytes(), &resp))
 		require.NoError(t, err)
 		require.Equal(t, len(objs), int(resp.Pagination.Total))

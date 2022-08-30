@@ -1,13 +1,13 @@
 package keeper
 
 import (
-	"github.com/charleenfei/icq-ics20-cosmoverse-workshop/x/eightball/types"
+	"github.com/charleenfei/cosmoverse-workshop/x/eightball/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // SetFortunes set a specific fortunes in the store from its index
-func (k Keeper) SetFortunes(ctx sdk.Context, fortunes types.Fortunes) {
+func (k Keeper) SetFortunes(ctx sdk.Context, fortunes types.Fortune) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FortunesKeyPrefix))
 	b := k.cdc.MustMarshal(&fortunes)
 	store.Set(types.FortunesKey(
@@ -20,7 +20,7 @@ func (k Keeper) GetFortunes(
 	ctx sdk.Context,
 	owner string,
 
-) (val types.Fortunes, found bool) {
+) (val types.Fortune, found bool) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FortunesKeyPrefix))
 
 	b := store.Get(types.FortunesKey(
@@ -47,14 +47,14 @@ func (k Keeper) RemoveFortunes(
 }
 
 // GetAllFortunes returns all fortunes
-func (k Keeper) GetAllFortunes(ctx sdk.Context) (list []types.Fortunes) {
+func (k Keeper) GetAllFortunes(ctx sdk.Context) (list []types.Fortune) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FortunesKeyPrefix))
 	iterator := sdk.KVStorePrefixIterator(store, []byte{})
 
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
-		var val types.Fortunes
+		var val types.Fortune
 		k.cdc.MustUnmarshal(iterator.Value(), &val)
 		list = append(list, val)
 	}

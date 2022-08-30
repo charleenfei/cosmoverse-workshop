@@ -1,0 +1,12 @@
+syntax = "proto3";
+package eightball.v1;
+
+option go_package = "github.com/charleenfei/cosmoverse-workshop/x/eightball/types";
+
+message Fortune {
+  string owner = 1; 
+  string price = 2; 
+  string fortune = 3; 
+  
+}
+

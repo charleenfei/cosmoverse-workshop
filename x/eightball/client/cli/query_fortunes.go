@@ -3,7 +3,7 @@ package cli
 import (
 	"context"
 
-	"github.com/charleenfei/icq-ics20-cosmoverse-workshop/x/eightball/types"
+	"github.com/charleenfei/cosmoverse-workshop/x/eightball/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/spf13/cobra"
@@ -23,11 +23,11 @@ func CmdListFortunes() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			params := &types.QueryAllFortunesRequest{
+			params := &types.QueryFortunesRequest{
 				Pagination: pageReq,
 			}
 
-			res, err := queryClient.FortunesAll(context.Background(), params)
+			res, err := queryClient.Fortunes(context.Background(), params)
 			if err != nil {
 				return err
 			}
@@ -54,11 +54,11 @@ func CmdShowFortunes() *cobra.Command {
 
 			argOwner := args[0]
 
-			params := &types.QueryGetFortunesRequest{
+			params := &types.QueryFortuneRequest{
 				Owner: argOwner,
 			}
 
-			res, err := queryClient.Fortunes(context.Background(), params)
+			res, err := queryClient.Fortune(context.Background(), params)
 			if err != nil {
 				return err
 			}

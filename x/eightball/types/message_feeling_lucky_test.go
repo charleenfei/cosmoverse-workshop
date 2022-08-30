@@ -3,7 +3,7 @@ package types
 import (
 	"testing"
 
-	"github.com/charleenfei/icq-ics20-cosmoverse-workshop/testutil/sample"
+	"github.com/charleenfei/cosmoverse-workshop/testutil/sample"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/stretchr/testify/require"
 )

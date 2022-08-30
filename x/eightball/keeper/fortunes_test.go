@@ -4,10 +4,10 @@ import (
 	"strconv"
 	"testing"
 
-	keepertest "github.com/charleenfei/icq-ics20-cosmoverse-workshop/testutil/keeper"
-	"github.com/charleenfei/icq-ics20-cosmoverse-workshop/testutil/nullify"
-	"github.com/charleenfei/icq-ics20-cosmoverse-workshop/x/eightball/keeper"
-	"github.com/charleenfei/icq-ics20-cosmoverse-workshop/x/eightball/types"
+	keepertest "github.com/charleenfei/cosmoverse-workshop/testutil/keeper"
+	"github.com/charleenfei/cosmoverse-workshop/testutil/nullify"
+	"github.com/charleenfei/cosmoverse-workshop/x/eightball/keeper"
+	"github.com/charleenfei/cosmoverse-workshop/x/eightball/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 )
@@ -15,8 +15,8 @@ import (
 // Prevent strconv unused error
 var _ = strconv.IntSize
 
-func createNFortunes(keeper *keeper.Keeper, ctx sdk.Context, n int) []types.Fortunes {
-	items := make([]types.Fortunes, n)
+func createNFortunes(keeper *keeper.Keeper, ctx sdk.Context, n int) []types.Fortune {
+	items := make([]types.Fortune, n)
 	for i := range items {
 		items[i].Owner = strconv.Itoa(i)
 

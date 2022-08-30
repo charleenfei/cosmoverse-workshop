@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/charleenfei/icq-ics20-cosmoverse-workshop/app"
+	"github.com/charleenfei/cosmoverse-workshop/app"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/simapp"

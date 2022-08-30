@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	keepertest "github.com/charleenfei/icq-ics20-cosmoverse-workshop/testutil/keeper"
-	"github.com/charleenfei/icq-ics20-cosmoverse-workshop/x/eightball/keeper"
-	"github.com/charleenfei/icq-ics20-cosmoverse-workshop/x/eightball/types"
+	keepertest "github.com/charleenfei/cosmoverse-workshop/testutil/keeper"
+	"github.com/charleenfei/cosmoverse-workshop/x/eightball/keeper"
+	"github.com/charleenfei/cosmoverse-workshop/x/eightball/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 

@@ -3,9 +3,9 @@ package eightball
 import (
 	"math/rand"
 
-	"github.com/charleenfei/icq-ics20-cosmoverse-workshop/testutil/sample"
-	eightballsimulation "github.com/charleenfei/icq-ics20-cosmoverse-workshop/x/eightball/simulation"
-	"github.com/charleenfei/icq-ics20-cosmoverse-workshop/x/eightball/types"
+	"github.com/charleenfei/cosmoverse-workshop/testutil/sample"
+	eightballsimulation "github.com/charleenfei/cosmoverse-workshop/x/eightball/simulation"
+	"github.com/charleenfei/cosmoverse-workshop/x/eightball/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	simappparams "github.com/cosmos/cosmos-sdk/simapp/params"
 	sdk "github.com/cosmos/cosmos-sdk/types"
