@@ -176,7 +176,8 @@ func (im IBCMiddleware) SendPacket(
 	chanCap *capabilitytypes.Capability,
 	packet ibcexported.PacketI,
 ) error {
-	return nil
+	// call underlying callback
+	return im.keeper.ICS4wrapper.SendPacket(ctx, chanCap, packet)
 }
 
 // WriteAcknowledgement implements the ICS4 Wrapper interface
@@ -186,10 +187,12 @@ func (im IBCMiddleware) WriteAcknowledgement(
 	packet ibcexported.PacketI,
 	ack ibcexported.Acknowledgement,
 ) error {
-	return nil
+	// call underlying callback
+	return im.keeper.ICS4wrapper.WriteAcknowledgement(ctx, chanCap, packet, ack)
 }
 
 // GetAppVersion returns the application version of the underlying application
 func (im IBCMiddleware) GetAppVersion(ctx sdk.Context, portID, channelID string) (string, bool) {
-	return "", false
+	// call underlying callback
+	return im.keeper.ICS4wrapper.GetAppVersion(ctx, portID, channelID)
 }
