@@ -9,6 +9,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+
+	porttypes "github.com/cosmos/ibc-go/v5/modules/core/05-port/types"
 )
 
 type (
@@ -21,7 +23,9 @@ type (
 		accountKeeper types.AccountKeeper
 		bankKeeper    types.BankKeeper
 
-		transferKeeper      types.TransferKeeper
+		ICS4wrapper porttypes.ICS4Wrapper
+
+		transferKeeper types.TransferKeeper
 	}
 )
 
@@ -33,6 +37,8 @@ func NewKeeper(
 
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
+
+	ics4wrapper porttypes.ICS4Wrapper,
 
 	transferKeeper types.TransferKeeper,
 ) *Keeper {
@@ -48,8 +54,10 @@ func NewKeeper(
 		memKey:     memKey,
 		paramstore: ps,
 
-		accountKeeper:  accountKeeper,
-		bankKeeper:     bankKeeper,
+		accountKeeper: accountKeeper,
+		bankKeeper:    bankKeeper,
+
+		ICS4wrapper: ics4wrapper,
 
 		transferKeeper: transferKeeper,
 	}
