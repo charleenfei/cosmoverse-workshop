@@ -31,23 +31,21 @@ func (k msgServer) FeelingLucky(goCtx context.Context, msg *types.MsgFeelingLuck
 	// if so
 	// escrow funds (send from owner to module account)
 
-
 	// module account send everything over ICS20 to ICA on DEX chain
-		// OnAck:
-			// if success: MultiMsgTx
-				// send ICA message to swap user tokens to desired token denom
-				// ICS20 send from ICA account on DEX chain desired denom to module account 
-					// module acc --> community pool
-				// ICS20 send from ICA account on DEX chain rest back to user
-			// OnAck for MultiMsgTx:
-				// send fortune to user
-			// OnTimeout
-			// OnAckErr
-				//
-			
-		// OnTimeout: refund tokens back to user
-		// OnAckErr: refund tokens
+	// OnAck:
+	// if success: MultiMsgTx
+	// send ICA message to swap user tokens to desired token denom
+	// ICS20 send from ICA account on DEX chain desired denom to module account
+	// module acc --> community pool
+	// ICS20 send from ICA account on DEX chain rest back to user
+	// OnAck for MultiMsgTx:
+	// send fortune to user
+	// OnTimeout
+	// OnAckErr
+	//
 
+	// OnTimeout: refund tokens back to user
+	// OnAckErr: refund tokens
 
 	// chain 2: DEX chain w LP
 	// accept X amount, gives Y amount back

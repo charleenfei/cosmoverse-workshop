@@ -1,0 +1,15 @@
+syntax = "proto3";
+package charleenfei.cosmoverseworkshop.wrapper;
+
+import "gogoproto/gogo.proto";
+import "wrapper/params.proto";
+// this line is used by starport scaffolding # genesis/proto/import
+
+option go_package = "github.com/charleenfei/cosmoverse-workshop/x/wrapper/types";
+
+// GenesisState defines the wrapper module's genesis state.
+message GenesisState {
+  Params params = 1 [(gogoproto.nullable) = false];
+  string port_id = 2;
+  // this line is used by starport scaffolding # genesis/proto/state
+}

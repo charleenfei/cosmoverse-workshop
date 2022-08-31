@@ -1,0 +1,12 @@
+syntax = "proto3";
+package charleenfei.cosmoverseworkshop.wrapper;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/charleenfei/cosmoverse-workshop/x/wrapper/types";
+
+// Params defines the parameters for the module.
+message Params {
+  option (gogoproto.goproto_stringer) = false;
+  
+}

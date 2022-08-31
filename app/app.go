@@ -102,6 +102,9 @@ import (
 	eightballmodule "github.com/charleenfei/cosmoverse-workshop/x/eightball"
 	eightballmodulekeeper "github.com/charleenfei/cosmoverse-workshop/x/eightball/keeper"
 	eightballmoduletypes "github.com/charleenfei/cosmoverse-workshop/x/eightball/types"
+	wrappermodule "github.com/charleenfei/cosmoverse-workshop/x/wrapper"
+	wrappermodulekeeper "github.com/charleenfei/cosmoverse-workshop/x/wrapper/keeper"
+	wrappermoduletypes "github.com/charleenfei/cosmoverse-workshop/x/wrapper/types"
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 )
 
@@ -157,6 +160,7 @@ var (
 		vesting.AppModuleBasic{},
 		monitoringp.AppModuleBasic{},
 		eightballmodule.AppModuleBasic{},
+		wrappermodule.AppModuleBasic{},
 		// this line is used by starport scaffolding # stargate/app/moduleBasic
 	)
 
@@ -230,7 +234,9 @@ type App struct {
 	ScopedTransferKeeper   capabilitykeeper.ScopedKeeper
 	ScopedMonitoringKeeper capabilitykeeper.ScopedKeeper
 
-	EightballKeeper eightballmodulekeeper.Keeper
+	EightballKeeper     eightballmodulekeeper.Keeper
+	ScopedWrapperKeeper capabilitykeeper.ScopedKeeper
+	WrapperKeeper       wrappermodulekeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	// mm is the module manager
@@ -268,6 +274,7 @@ func New(
 		govtypes.StoreKey, paramstypes.StoreKey, ibchost.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey,
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, capabilitytypes.StoreKey, monitoringptypes.StoreKey,
 		eightballmoduletypes.StoreKey,
+		wrappermoduletypes.StoreKey,
 		// this line is used by starport scaffolding # stargate/app/storeKey
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -399,12 +406,26 @@ func New(
 	)
 	eightballModule := eightballmodule.NewAppModule(appCodec, app.EightballKeeper, app.AccountKeeper, app.BankKeeper)
 
+	scopedWrapperKeeper := app.CapabilityKeeper.ScopeToModule(wrappermoduletypes.ModuleName)
+	app.ScopedWrapperKeeper = scopedWrapperKeeper
+	app.WrapperKeeper = *wrappermodulekeeper.NewKeeper(
+		appCodec,
+		keys[wrappermoduletypes.StoreKey],
+		keys[wrappermoduletypes.MemStoreKey],
+		app.GetSubspace(wrappermoduletypes.ModuleName),
+		app.IBCKeeper.ChannelKeeper,
+		&app.IBCKeeper.PortKeeper,
+		scopedWrapperKeeper,
+	)
+	wrapperModule := wrappermodule.NewAppModule(appCodec, app.WrapperKeeper, app.AccountKeeper, app.BankKeeper)
+
 	// this line is used by starport scaffolding # stargate/app/keeperDefinition
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibcporttypes.NewRouter()
 	ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferIBCModule)
 	ibcRouter.AddRoute(monitoringptypes.ModuleName, monitoringModule)
+	ibcRouter.AddRoute(wrappermoduletypes.ModuleName, wrapperModule)
 	// this line is used by starport scaffolding # ibc/app/router
 	app.IBCKeeper.SetRouter(ibcRouter)
 
@@ -441,6 +462,7 @@ func New(
 		transferModule,
 		monitoringModule,
 		eightballModule,
+		wrapperModule,
 		// this line is used by starport scaffolding # stargate/app/appModule
 	)
 
@@ -469,6 +491,7 @@ func New(
 		paramstypes.ModuleName,
 		monitoringptypes.ModuleName,
 		eightballmoduletypes.ModuleName,
+		wrappermoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/beginBlockers
 	)
 
@@ -493,6 +516,7 @@ func New(
 		ibctransfertypes.ModuleName,
 		monitoringptypes.ModuleName,
 		eightballmoduletypes.ModuleName,
+		wrappermoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/endBlockers
 	)
 
@@ -522,6 +546,7 @@ func New(
 		feegrant.ModuleName,
 		monitoringptypes.ModuleName,
 		eightballmoduletypes.ModuleName,
+		wrappermoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis
 	)
 
@@ -547,6 +572,7 @@ func New(
 		transferModule,
 		monitoringModule,
 		eightballModule,
+		wrapperModule,
 		// this line is used by starport scaffolding # stargate/app/appModule
 	)
 	app.sm.RegisterStoreDecoders()
@@ -737,6 +763,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(ibchost.ModuleName)
 	paramsKeeper.Subspace(monitoringptypes.ModuleName)
 	paramsKeeper.Subspace(eightballmoduletypes.ModuleName)
+	paramsKeeper.Subspace(wrappermoduletypes.ModuleName)
 	// this line is used by starport scaffolding # stargate/app/paramSubspace
 
 	return paramsKeeper
