@@ -395,9 +395,11 @@ func New(
 		keys[eightballmoduletypes.MemStoreKey],
 		app.GetSubspace(eightballmoduletypes.ModuleName),
 
+		app.AccountKeeper,
 		app.BankKeeper,
+		app.TransferKeeper,
 	)
-	eightballModule := eightballmodule.NewAppModule(appCodec, app.EightballKeeper, app.AccountKeeper, app.BankKeeper)
+	eightballModule := eightballmodule.NewAppModule(appCodec, app.EightballKeeper, app.AccountKeeper, app.BankKeeper, app.TransferKeeper)
 
 	// this line is used by starport scaffolding # stargate/app/keeperDefinition
 

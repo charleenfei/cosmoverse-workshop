@@ -1,6 +1,8 @@
 syntax = "proto3";
 package eightball.v1;
 
+import "cosmos/base/v1beta1/coin.proto";
+
 // this line is used by starport scaffolding # proto/tx/import
 
 option go_package = "github.com/charleenfei/cosmoverse-workshop/x/eightball/types";
@@ -13,7 +15,8 @@ service Msg {
 
 message MsgFeelingLucky {
   string creator = 1;
-  string offering = 2;
+  // TODO: non-nullable gogoproto
+  cosmos.base.v1beta1.Coin offering = 2;
 }
 
 message MsgFeelingLuckyResponse {

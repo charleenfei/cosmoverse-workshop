@@ -9,7 +9,7 @@ const TypeMsgFeelingLucky = "feeling_lucky"
 
 var _ sdk.Msg = &MsgFeelingLucky{}
 
-func NewMsgFeelingLucky(creator string, offering string) *MsgFeelingLucky {
+func NewMsgFeelingLucky(creator string, offering *sdk.Coin) *MsgFeelingLucky {
 	return &MsgFeelingLucky{
 		Creator:  creator,
 		Offering: offering,

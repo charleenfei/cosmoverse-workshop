@@ -9,21 +9,25 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 
-	abci "github.com/tendermint/tendermint/abci/types"
-
 	"github.com/charleenfei/cosmoverse-workshop/x/eightball/client/cli"
 	eightballkeeper "github.com/charleenfei/cosmoverse-workshop/x/eightball/keeper"
 	"github.com/charleenfei/cosmoverse-workshop/x/eightball/types"
+
+	abci "github.com/tendermint/tendermint/abci/types"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+
+	porttypes "github.com/cosmos/ibc-go/v3/modules/core/05-port/types"
 )
 
 var (
 	_ module.AppModule      = AppModule{}
 	_ module.AppModuleBasic = AppModuleBasic{}
+	_ porttypes.IBCModule   = AppModule{}
 )
 
 // ----------------------------------------------------------------------------
@@ -101,6 +105,8 @@ type AppModule struct {
 	keeper        eightballkeeper.Keeper
 	accountKeeper types.AccountKeeper
 	bankKeeper    types.BankKeeper
+
+	transferkeeper types.TransferKeeper
 }
 
 func NewAppModule(
@@ -108,12 +114,14 @@ func NewAppModule(
 	keeper eightballkeeper.Keeper,
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
+	transferkeeper types.TransferKeeper,
 ) AppModule {
 	return AppModule{
 		AppModuleBasic: NewAppModuleBasic(cdc),
 		keeper:         keeper,
 		accountKeeper:  accountKeeper,
 		bankKeeper:     bankKeeper,
+		transferkeeper: transferkeeper,
 	}
 }
 

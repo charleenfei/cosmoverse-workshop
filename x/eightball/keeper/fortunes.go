@@ -61,3 +61,20 @@ func (k Keeper) GetAllFortunes(ctx sdk.Context) (list []types.Fortune) {
 
 	return
 }
+
+// fortunes := k.GetAllFortunes(ctx)
+	// var availableFortunes []types.Fortune
+
+	// for _, fortune := range fortunes {
+	// 	if fortune.Owner == msg.Creator {
+	// 		fmt.Printf("you've already got a fortune! it's this one: %s ", fortune.Fortune)
+	// 	}
+	// 	if fortune.Owner == "" {
+	// 		availableFortunes = append(availableFortunes, fortune)
+	// 	}
+	// }
+
+	// selectedFortune := availableFortunes[rand.Intn(len(availableFortunes) - 1)]
+	// selectedFortune.Owner = msg.Creator
+
+	// k.SetFortune(ctx, selectedFortune)

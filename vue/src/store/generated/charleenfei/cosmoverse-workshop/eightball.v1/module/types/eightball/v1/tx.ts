@@ -1,24 +1,26 @@
 /* eslint-disable */
 import { Reader, Writer } from "protobufjs/minimal";
+import { Coin } from "../../cosmos/base/v1beta1/coin";
 
 export const protobufPackage = "eightball.v1";
 
 export interface MsgFeelingLucky {
   creator: string;
-  offering: string;
+  /** TODO: non-nullable gogoproto */
+  offering: Coin | undefined;
 }
 
 export interface MsgFeelingLuckyResponse {}
 
-const baseMsgFeelingLucky: object = { creator: "", offering: "" };
+const baseMsgFeelingLucky: object = { creator: "" };
 
 export const MsgFeelingLucky = {
   encode(message: MsgFeelingLucky, writer: Writer = Writer.create()): Writer {
     if (message.creator !== "") {
       writer.uint32(10).string(message.creator);
     }
-    if (message.offering !== "") {
-      writer.uint32(18).string(message.offering);
+    if (message.offering !== undefined) {
+      Coin.encode(message.offering, writer.uint32(18).fork()).ldelim();
     }
     return writer;
   },
@@ -34,7 +36,7 @@ export const MsgFeelingLucky = {
           message.creator = reader.string();
           break;
         case 2:
-          message.offering = reader.string();
+          message.offering = Coin.decode(reader, reader.uint32());
           break;
         default:
           reader.skipType(tag & 7);
@@ -52,9 +54,9 @@ export const MsgFeelingLucky = {
       message.creator = "";
     }
     if (object.offering !== undefined && object.offering !== null) {
-      message.offering = String(object.offering);
+      message.offering = Coin.fromJSON(object.offering);
     } else {
-      message.offering = "";
+      message.offering = undefined;
     }
     return message;
   },
@@ -62,7 +64,10 @@ export const MsgFeelingLucky = {
   toJSON(message: MsgFeelingLucky): unknown {
     const obj: any = {};
     message.creator !== undefined && (obj.creator = message.creator);
-    message.offering !== undefined && (obj.offering = message.offering);
+    message.offering !== undefined &&
+      (obj.offering = message.offering
+        ? Coin.toJSON(message.offering)
+        : undefined);
     return obj;
   },
 
@@ -74,9 +79,9 @@ export const MsgFeelingLucky = {
       message.creator = "";
     }
     if (object.offering !== undefined && object.offering !== null) {
-      message.offering = object.offering;
+      message.offering = Coin.fromPartial(object.offering);
     } else {
-      message.offering = "";
+      message.offering = undefined;
     }
     return message;
   },
