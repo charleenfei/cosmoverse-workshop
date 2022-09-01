@@ -12,8 +12,8 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v3/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v3/modules/core/exported"
 
-	icatypes "github.com/cosmos/ibc-go/v5/modules/apps/27-interchain-accounts/types"
-	transfertypes "github.com/cosmos/ibc-go/v5/modules/apps/transfer/types"
+	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
+	transfertypes "github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
 )
 
 var _ porttypes.Middleware = &IBCMiddleware{}
@@ -23,6 +23,14 @@ var _ porttypes.Middleware = &IBCMiddleware{}
 type IBCMiddleware struct {
 	app    porttypes.IBCModule
 	keeper keeper.Keeper
+}
+
+// NewIBCMiddleware creates a new IBCMiddlware given the keeper and underlying application
+func NewIBCMiddleware(app porttypes.IBCModule, k keeper.Keeper) IBCMiddleware {
+	return IBCMiddleware{
+		app:    app,
+		keeper: k,
+	}
 }
 
 // OnChanOpenInit implements the IBCModule interface
@@ -177,7 +185,7 @@ func (im IBCMiddleware) SendPacket(
 	packet ibcexported.PacketI,
 ) error {
 	// call underlying callback
-	return im.keeper.ICS4wrapper.SendPacket(ctx, chanCap, packet)
+	return im.keeper.SendPacket(ctx, chanCap, packet)
 }
 
 // WriteAcknowledgement implements the ICS4 Wrapper interface
@@ -188,11 +196,5 @@ func (im IBCMiddleware) WriteAcknowledgement(
 	ack ibcexported.Acknowledgement,
 ) error {
 	// call underlying callback
-	return im.keeper.ICS4wrapper.WriteAcknowledgement(ctx, chanCap, packet, ack)
-}
-
-// GetAppVersion returns the application version of the underlying application
-func (im IBCMiddleware) GetAppVersion(ctx sdk.Context, portID, channelID string) (string, bool) {
-	// call underlying callback
-	return im.keeper.ICS4wrapper.GetAppVersion(ctx, portID, channelID)
+	return im.keeper.WriteAcknowledgement(ctx, chanCap, packet, ack)
 }

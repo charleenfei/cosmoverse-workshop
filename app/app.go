@@ -351,15 +351,29 @@ func New(
 		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper)).
 		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
 
+	app.EightballKeeper = *eightballmodulekeeper.NewKeeper(
+		appCodec,
+		keys[eightballmoduletypes.StoreKey],
+		keys[eightballmoduletypes.MemStoreKey],
+		app.GetSubspace(eightballmoduletypes.ModuleName),
+
+		app.AccountKeeper,
+		app.BankKeeper,
+		app.IBCKeeper.ChannelKeeper,
+		app.TransferKeeper,
+	)
+	eightballModule := eightballmodule.NewAppModule(appCodec, app.EightballKeeper, app.AccountKeeper, app.BankKeeper, app.TransferKeeper)
+
 	// Create Transfer Keepers
 	app.TransferKeeper = ibctransferkeeper.NewKeeper(
 		appCodec, keys[ibctransfertypes.StoreKey], app.GetSubspace(ibctransfertypes.ModuleName),
-		app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
+		app.EightballKeeper, // 8ball module is wrapping ICS-4
+		app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
 		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper,
 	)
 	var (
 		transferModule    = transfer.NewAppModule(app.TransferKeeper)
-		transferIBCModule = transfer.NewIBCModule(app.TransferKeeper)
+		transferIBCModule = eightballmodule.NewIBCMiddleware(transfer.NewIBCModule(app.TransferKeeper), app.EightballKeeper)
 	)
 
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
@@ -388,18 +402,6 @@ func New(
 		scopedMonitoringKeeper,
 	)
 	monitoringModule := monitoringp.NewAppModule(appCodec, app.MonitoringKeeper)
-
-	app.EightballKeeper = *eightballmodulekeeper.NewKeeper(
-		appCodec,
-		keys[eightballmoduletypes.StoreKey],
-		keys[eightballmoduletypes.MemStoreKey],
-		app.GetSubspace(eightballmoduletypes.ModuleName),
-
-		app.AccountKeeper,
-		app.BankKeeper,
-		app.TransferKeeper,
-	)
-	eightballModule := eightballmodule.NewAppModule(appCodec, app.EightballKeeper, app.AccountKeeper, app.BankKeeper, app.TransferKeeper)
 
 	// this line is used by starport scaffolding # stargate/app/keeperDefinition
 
