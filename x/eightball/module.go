@@ -21,18 +21,17 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	porttypes "github.com/cosmos/ibc-go/v3/modules/core/05-port/types"
+	ibctransferkeeper "github.com/cosmos/ibc-go/v3/modules/apps/transfer/keeper"
 )
 
 var (
 	_ module.AppModule      = AppModule{}
 	_ module.AppModuleBasic = AppModuleBasic{}
-	_ porttypes.IBCModule   = AppModule{}
 )
 
 // ----------------------------------------------------------------------------
 // AppModuleBasic
-// ----------------------------------------------------------------------------
+// --------------------------------------------------------- -------------------
 
 // AppModuleBasic implements the AppModuleBasic interface for the capability module.
 type AppModuleBasic struct {
@@ -106,7 +105,7 @@ type AppModule struct {
 	accountKeeper types.AccountKeeper
 	bankKeeper    types.BankKeeper
 
-	transferkeeper types.TransferKeeper
+	transferkeeper ibctransferkeeper.Keeper
 }
 
 func NewAppModule(
@@ -114,7 +113,7 @@ func NewAppModule(
 	keeper eightballkeeper.Keeper,
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
-	transferkeeper types.TransferKeeper,
+	transferkeeper ibctransferkeeper.Keeper,
 ) AppModule {
 	return AppModule{
 		AppModuleBasic: NewAppModuleBasic(cdc),

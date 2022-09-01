@@ -9,8 +9,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
 
-	porttypes "github.com/cosmos/ibc-go/v5/modules/core/05-port/types"
+	icacontrollerkeeper "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/keeper"
+	transferkeeper "github.com/cosmos/ibc-go/v3/modules/apps/transfer/keeper"
+	porttypes "github.com/cosmos/ibc-go/v3/modules/core/05-port/types"
 )
 
 type (
@@ -25,7 +28,9 @@ type (
 
 		ICS4wrapper porttypes.ICS4Wrapper
 
-		transferKeeper types.TransferKeeper
+		transferKeeper      transferkeeper.Keeper
+		scopedKeeper        capabilitykeeper.ScopedKeeper
+		icacontrollerKeeper icacontrollerkeeper.Keeper
 	}
 )
 
@@ -40,7 +45,9 @@ func NewKeeper(
 
 	ics4wrapper porttypes.ICS4Wrapper,
 
-	transferKeeper types.TransferKeeper,
+	transferKeeper transferkeeper.Keeper,
+	scopedKeeper        capabilitykeeper.ScopedKeeper,
+	icacontrollerKeeper icacontrollerkeeper.Keeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -59,7 +66,9 @@ func NewKeeper(
 
 		ICS4wrapper: ics4wrapper,
 
-		transferKeeper: transferKeeper,
+		transferKeeper:      transferKeeper,
+		scopedKeeper:        scopedKeeper,
+		icacontrollerKeeper: icacontrollerKeeper,
 	}
 }
 

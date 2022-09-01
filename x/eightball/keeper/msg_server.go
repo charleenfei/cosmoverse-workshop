@@ -26,6 +26,7 @@ func (k msgServer) FeelingLucky(goCtx context.Context, msg *types.MsgFeelingLuck
 
 	fortunes := k.GetAllFortunes(ctx)
 
+	// check if there is already a fortune belonging to the msg sender, if there is reject the tx
 	for _, fortune := range fortunes {
 		if fortune.Owner == msg.Creator {
 			return nil, types.ErrAlreadyFortunate
@@ -37,10 +38,12 @@ func (k msgServer) FeelingLucky(goCtx context.Context, msg *types.MsgFeelingLuck
 		return nil, err
 	}
 
+	// send offering to eightball module account to be transferred over to simple-dex
 	if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, sender, types.ModuleName, sdk.NewCoins(*msg.Offering)); err != nil {
 		return nil, err
 	}
 
+	// send an IBC token transfer to the addr owned by the eightball module account on the simple-dex host chain
 	eightballAddr := k.accountKeeper.GetModuleAddress(types.ModuleName)
 
 	k.transferKeeper.SendTransfer(

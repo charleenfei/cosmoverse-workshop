@@ -1,38 +1,38 @@
 package eightball_test
 
-import (
-	"testing"
+// import (
+// 	"testing"
 
-	keepertest "github.com/charleenfei/cosmoverse-workshop/testutil/keeper"
-	"github.com/charleenfei/cosmoverse-workshop/testutil/nullify"
-	"github.com/charleenfei/cosmoverse-workshop/x/eightball"
-	"github.com/charleenfei/cosmoverse-workshop/x/eightball/types"
-	"github.com/stretchr/testify/require"
-)
+// 	keepertest "github.com/charleenfei/cosmoverse-workshop/testutil/keeper"
+// 	"github.com/charleenfei/cosmoverse-workshop/testutil/nullify"
+// 	"github.com/charleenfei/cosmoverse-workshop/x/eightball"
+// 	"github.com/charleenfei/cosmoverse-workshop/x/eightball/types"
+// 	"github.com/stretchr/testify/require"
+// )
 
-func TestGenesis(t *testing.T) {
-	genesisState := types.GenesisState{
-		Params: types.DefaultParams(),
+// func TestGenesis(t *testing.T) {
+// 	genesisState := types.GenesisState{
+// 		Params: types.DefaultParams(),
 
-		FortunesList: []types.Fortune{
-			{
-				Owner: "0",
-			},
-			{
-				Owner: "1",
-			},
-		},
-		// this line is used by starport scaffolding # genesis/test/state
-	}
+// 		FortunesList: []types.Fortune{
+// 			{
+// 				Owner: "0",
+// 			},
+// 			{
+// 				Owner: "1",
+// 			},
+// 		},
+// 		// this line is used by starport scaffolding # genesis/test/state
+// 	}
 
-	k, ctx := keepertest.EightballKeeper(t)
-	eightball.InitGenesis(ctx, *k, genesisState)
-	got := eightball.ExportGenesis(ctx, *k)
-	require.NotNil(t, got)
+// 	k, ctx := keepertest.EightballKeeper(t)
+// 	eightball.InitGenesis(ctx, *k, genesisState)
+// 	got := eightball.ExportGenesis(ctx, *k)
+// 	require.NotNil(t, got)
 
-	nullify.Fill(&genesisState)
-	nullify.Fill(got)
+// 	nullify.Fill(&genesisState)
+// 	nullify.Fill(got)
 
-	require.ElementsMatch(t, genesisState.FortunesList, got.FortunesList)
-	// this line is used by starport scaffolding # genesis/test/assert
-}
+// 	require.ElementsMatch(t, genesisState.FortunesList, got.FortunesList)
+// 	// this line is used by starport scaffolding # genesis/test/assert
+// }
