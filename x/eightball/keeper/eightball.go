@@ -20,6 +20,7 @@ func (k Keeper) OnTransferAck(ctx sdk.Context, transferData transfertypes.Fungib
 			return err
 		}
 
+			// getconnectionID from connect to dex , stub out for now
 		channelID, found := k.icacontrollerKeeper.GetActiveChannelID(ctx, ConnectionId, portID)
 		if !found {
 			sdkerrors.Wrapf(icatypes.ErrActiveChannelNotFound, "failed to retrieve active channel for port %s", portID)

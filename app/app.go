@@ -106,7 +106,7 @@ import (
 	icacontrollertypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/types"
 	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
 	porttypes "github.com/cosmos/ibc-go/v3/modules/core/05-port/types"
-	icacontroller "github.com/cosmos/ibc-go/v5/modules/apps/27-interchain-accounts/controller"
+	icacontroller "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller"
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 )
 
@@ -242,6 +242,7 @@ type App struct {
 	ScopedEightballKeeper     capabilitykeeper.ScopedKeeper
 
 	EightballKeeper     eightballmodulekeeper.Keeper
+	// create IBC middleware (line 23 ibc_middleware.go)
 	ICAControllerKeeper icacontrollerkeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
@@ -382,7 +383,7 @@ func New(
 
 	app.ICAControllerKeeper = icacontrollerkeeper.NewKeeper(
 		appCodec, keys[icacontrollertypes.StoreKey], app.GetSubspace(icacontrollertypes.SubModuleName),
-		porttypes.ICS4Wrapper, // may be replaced with middleware such as ics29 fee
+		porttypes.ICS4Wrapper, // may be replaced with middleware such as ics29 fee // eightball middleware
 		app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
 		scopedICAControllerKeeper, app.MsgServiceRouter(),
 	)
