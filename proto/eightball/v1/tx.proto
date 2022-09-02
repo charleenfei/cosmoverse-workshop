@@ -2,6 +2,7 @@ syntax = "proto3";
 package eightball.v1;
 
 import "cosmos/base/v1beta1/coin.proto";
+import "gogoproto/gogo.proto";
 
 // this line is used by starport scaffolding # proto/tx/import
 
@@ -10,6 +11,7 @@ option go_package = "github.com/charleenfei/cosmoverse-workshop/x/eightball/type
 // Msg defines the Msg service.
 service Msg {
       rpc FeelingLucky(MsgFeelingLucky) returns (MsgFeelingLuckyResponse);
+      rpc ConnectToDex(MsgConnectToDex) returns (MsgConnectToDexResponse);
 // this line is used by starport scaffolding # proto/tx/rpc
 }
 
@@ -23,3 +25,12 @@ message MsgFeelingLuckyResponse {
 }
 
 // this line is used by starport scaffolding # proto/tx/message
+
+
+message MsgConnectToDex {
+  string creator = 1;
+  string connection_id              = 2 [(gogoproto.moretags) = "yaml:\"connection_id\""];
+}
+
+message MsgConnectToDexResponse {
+}

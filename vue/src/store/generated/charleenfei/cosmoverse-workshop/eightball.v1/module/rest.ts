@@ -26,6 +26,8 @@ export interface V1Fortune {
   fortune?: string;
 }
 
+export type V1MsgConnectToDexResponse = object;
+
 export type V1MsgFeelingLuckyResponse = object;
 
 export interface V1QueryFortuneResponse {

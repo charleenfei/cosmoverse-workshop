@@ -13,7 +13,6 @@ require (
 	github.com/spf13/cast v1.4.1
 	github.com/spf13/cobra v1.4.0
 	github.com/stretchr/testify v1.7.1
-	github.com/tendermint/spn v0.2.1-0.20220708132853-26a17f03c072
 	github.com/tendermint/tendermint v0.34.19
 	github.com/tendermint/tm-db v0.6.7
 	google.golang.org/genproto v0.0.0-20220822174746-9e6da59bd2fc
@@ -150,6 +149,7 @@ require (
 	github.com/tendermint/crypto v0.0.0-20191022145703-50d29ede1e15 // indirect
 	github.com/tendermint/fundraising v0.3.1-0.20220613014523-03b4a2d4481a // indirect
 	github.com/tendermint/go-amino v0.16.0 // indirect
+	github.com/tendermint/spn v0.2.1-0.20220708132853-26a17f03c072 // indirect
 	github.com/tomasen/realip v0.0.0-20180522021738-f0c99a92ddce // indirect
 	github.com/xanzy/ssh-agent v0.2.1 // indirect
 	github.com/xo/terminfo v0.0.0-20210125001918-ca9a967f8778 // indirect

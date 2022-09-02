@@ -47310,6 +47310,8 @@ definitions:
         type: string
       fortune:
         type: string
+  eightball.v1.MsgConnectToDexResponse:
+    type: object
   eightball.v1.MsgFeelingLuckyResponse:
     type: object
   eightball.v1.QueryFortuneResponse:

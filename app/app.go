@@ -23,7 +23,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
-	authsims "github.com/cosmos/cosmos-sdk/x/auth/simulation"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
@@ -94,14 +93,15 @@ import (
 	"github.com/ignite/cli/ignite/pkg/cosmoscmd"
 	"github.com/ignite/cli/ignite/pkg/openapiconsole"
 
-	monitoringp "github.com/tendermint/spn/x/monitoringp"
-	monitoringpkeeper "github.com/tendermint/spn/x/monitoringp/keeper"
-	monitoringptypes "github.com/tendermint/spn/x/monitoringp/types"
-
 	"github.com/charleenfei/cosmoverse-workshop/docs"
 	eightballmodule "github.com/charleenfei/cosmoverse-workshop/x/eightball"
 	eightballmodulekeeper "github.com/charleenfei/cosmoverse-workshop/x/eightball/keeper"
 	eightballmoduletypes "github.com/charleenfei/cosmoverse-workshop/x/eightball/types"
+
+	icacontroller "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller"
+	icacontrollerkeeper "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/keeper"
+	icacontrollertypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/types"
+	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 )
 
@@ -155,7 +155,6 @@ var (
 		evidence.AppModuleBasic{},
 		transfer.AppModuleBasic{},
 		vesting.AppModuleBasic{},
-		monitoringp.AppModuleBasic{},
 		eightballmodule.AppModuleBasic{},
 		// this line is used by starport scaffolding # stargate/app/moduleBasic
 	)
@@ -170,7 +169,11 @@ var (
 		govtypes.ModuleName:             {authtypes.Burner},
 		ibctransfertypes.ModuleName:     {authtypes.Minter, authtypes.Burner},
 		eightballmoduletypes.ModuleName: {authtypes.Minter, authtypes.Burner, authtypes.Staking},
+		icatypes.ModuleName:             nil,
 		// this line is used by starport scaffolding # stargate/app/maccPerms
+	}
+	allowedReceivingModAcc = map[string]bool{
+		eightballmoduletypes.ModuleName: true,
 	}
 )
 
@@ -223,14 +226,16 @@ type App struct {
 	EvidenceKeeper   evidencekeeper.Keeper
 	TransferKeeper   ibctransferkeeper.Keeper
 	FeeGrantKeeper   feegrantkeeper.Keeper
-	MonitoringKeeper monitoringpkeeper.Keeper
 
 	// make scoped keepers public for test purposes
-	ScopedIBCKeeper        capabilitykeeper.ScopedKeeper
-	ScopedTransferKeeper   capabilitykeeper.ScopedKeeper
-	ScopedMonitoringKeeper capabilitykeeper.ScopedKeeper
+	ScopedIBCKeeper           capabilitykeeper.ScopedKeeper
+	ScopedTransferKeeper      capabilitykeeper.ScopedKeeper
+	ScopedICAControllerKeeper capabilitykeeper.ScopedKeeper
+	ScopedEightballKeeper     capabilitykeeper.ScopedKeeper
 
 	EightballKeeper eightballmodulekeeper.Keeper
+	// create IBC middleware (line 23 ibc_middleware.go)
+	ICAControllerKeeper icacontrollerkeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	// mm is the module manager
@@ -266,8 +271,8 @@ func New(
 		authtypes.StoreKey, authz.ModuleName, banktypes.StoreKey, stakingtypes.StoreKey,
 		minttypes.StoreKey, distrtypes.StoreKey, slashingtypes.StoreKey,
 		govtypes.StoreKey, paramstypes.StoreKey, ibchost.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey,
-		evidencetypes.StoreKey, ibctransfertypes.StoreKey, capabilitytypes.StoreKey, monitoringptypes.StoreKey,
-		eightballmoduletypes.StoreKey,
+		evidencetypes.StoreKey, ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
+		eightballmoduletypes.StoreKey, icacontrollertypes.StoreKey,
 		// this line is used by starport scaffolding # stargate/app/storeKey
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -295,6 +300,12 @@ func New(
 	// grant capabilities for the ibc and ibc-transfer modules
 	scopedIBCKeeper := app.CapabilityKeeper.ScopeToModule(ibchost.ModuleName)
 	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
+	scopedICAControllerKeeper := app.CapabilityKeeper.ScopeToModule(icacontrollertypes.SubModuleName)
+	scopedEightballKeeper := app.CapabilityKeeper.ScopeToModule(eightballmoduletypes.ModuleName)
+
+	// seal capability keeper after scoping modules
+	app.CapabilityKeeper.Seal()
+
 	// this line is used by starport scaffolding # stargate/app/scopedKeeper
 
 	// add keepers
@@ -361,6 +372,8 @@ func New(
 		app.BankKeeper,
 		app.IBCKeeper.ChannelKeeper,
 		app.TransferKeeper,
+		app.ScopedEightballKeeper,
+		app.ICAControllerKeeper,
 	)
 	eightballModule := eightballmodule.NewAppModule(appCodec, app.EightballKeeper, app.AccountKeeper, app.BankKeeper, app.TransferKeeper)
 
@@ -374,6 +387,16 @@ func New(
 	var (
 		transferModule    = transfer.NewAppModule(app.TransferKeeper)
 		transferIBCModule = eightballmodule.NewIBCMiddleware(transfer.NewIBCModule(app.TransferKeeper), app.EightballKeeper)
+
+		icaControllerModule    = icacontroller.NewAppModule(app.ICAControllerKeeper)
+		icaControllerIBCModule = eightballmodule.NewIBCMiddleware(icacontroller.NewIBCModule(app.ICAControllerKeeper), app.EightballKeeper)
+	)
+
+	app.ICAControllerKeeper = icacontrollerkeeper.NewKeeper(
+		appCodec, keys[icacontrollertypes.StoreKey], app.GetSubspace(icacontrollertypes.SubModuleName),
+		app.EightballKeeper, // 8ball module is wrapping ICS-4
+		app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
+		scopedICAControllerKeeper, app.MsgServiceRouter(),
 	)
 
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
@@ -387,28 +410,13 @@ func New(
 		appCodec, keys[govtypes.StoreKey], app.GetSubspace(govtypes.ModuleName), app.AccountKeeper, app.BankKeeper,
 		&stakingKeeper, govRouter,
 	)
-
-	scopedMonitoringKeeper := app.CapabilityKeeper.ScopeToModule(monitoringptypes.ModuleName)
-	app.MonitoringKeeper = *monitoringpkeeper.NewKeeper(
-		appCodec,
-		keys[monitoringptypes.StoreKey],
-		keys[monitoringptypes.MemStoreKey],
-		app.GetSubspace(monitoringptypes.ModuleName),
-		app.StakingKeeper,
-		app.IBCKeeper.ClientKeeper,
-		app.IBCKeeper.ConnectionKeeper,
-		app.IBCKeeper.ChannelKeeper,
-		&app.IBCKeeper.PortKeeper,
-		scopedMonitoringKeeper,
-	)
-	monitoringModule := monitoringp.NewAppModule(appCodec, app.MonitoringKeeper)
-
 	// this line is used by starport scaffolding # stargate/app/keeperDefinition
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibcporttypes.NewRouter()
 	ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferIBCModule)
-	ibcRouter.AddRoute(monitoringptypes.ModuleName, monitoringModule)
+	// TODO
+	ibcRouter.AddRoute(eightballmoduletypes.ModuleName, icaControllerModule)
 	// this line is used by starport scaffolding # ibc/app/router
 	app.IBCKeeper.SetRouter(ibcRouter)
 
@@ -443,7 +451,7 @@ func New(
 		ibc.NewAppModule(app.IBCKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 		transferModule,
-		monitoringModule,
+		icaControllerModule,
 		eightballModule,
 		// this line is used by starport scaffolding # stargate/app/appModule
 	)
@@ -471,7 +479,7 @@ func New(
 		genutiltypes.ModuleName,
 		feegrant.ModuleName,
 		paramstypes.ModuleName,
-		monitoringptypes.ModuleName,
+		icatypes.ModuleName,
 		eightballmoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/beginBlockers
 	)
@@ -495,7 +503,7 @@ func New(
 		upgradetypes.ModuleName,
 		ibchost.ModuleName,
 		ibctransfertypes.ModuleName,
-		monitoringptypes.ModuleName,
+		icatypes.ModuleName,
 		eightballmoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/endBlockers
 	)
@@ -524,7 +532,7 @@ func New(
 		upgradetypes.ModuleName,
 		ibctransfertypes.ModuleName,
 		feegrant.ModuleName,
-		monitoringptypes.ModuleName,
+		icatypes.ModuleName,
 		eightballmoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis
 	)
@@ -534,26 +542,25 @@ func New(
 	app.mm.RegisterServices(module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter()))
 
 	// create the simulation manager and define the order of the modules for deterministic simulations
-	app.sm = module.NewSimulationManager(
-		auth.NewAppModule(appCodec, app.AccountKeeper, authsims.RandomGenesisAccounts),
-		authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
-		bank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper),
-		capability.NewAppModule(appCodec, *app.CapabilityKeeper),
-		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper, app.interfaceRegistry),
-		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper),
-		mint.NewAppModule(appCodec, app.MintKeeper, app.AccountKeeper),
-		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
-		distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
-		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
-		params.NewAppModule(app.ParamsKeeper),
-		evidence.NewAppModule(app.EvidenceKeeper),
-		ibc.NewAppModule(app.IBCKeeper),
-		transferModule,
-		monitoringModule,
-		eightballModule,
-		// this line is used by starport scaffolding # stargate/app/appModule
-	)
-	app.sm.RegisterStoreDecoders()
+	// app.sm = module.NewSimulationManager(
+	// 	auth.NewAppModule(appCodec, app.AccountKeeper, authsims.RandomGenesisAccounts),
+	// 	authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
+	// 	bank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper),
+	// 	capability.NewAppModule(appCodec, *app.CapabilityKeeper),
+	// 	feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper, app.interfaceRegistry),
+	// 	gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper),
+	// 	mint.NewAppModule(appCodec, app.MintKeeper, app.AccountKeeper),
+	// 	staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
+	// 	distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
+	// 	slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
+	// 	params.NewAppModule(app.ParamsKeeper),
+	// 	evidence.NewAppModule(app.EvidenceKeeper),
+	// 	ibc.NewAppModule(app.IBCKeeper),
+	// 	transferModule,
+	// 	eightballModule,
+	// 	// this line is used by starport scaffolding # stargate/app/appModule
+	// )
+	// app.sm.RegisterStoreDecoders()
 
 	// initialize stores
 	app.MountKVStores(keys)
@@ -588,7 +595,9 @@ func New(
 
 	app.ScopedIBCKeeper = scopedIBCKeeper
 	app.ScopedTransferKeeper = scopedTransferKeeper
-	app.ScopedMonitoringKeeper = scopedMonitoringKeeper
+	app.ScopedEightballKeeper = scopedEightballKeeper
+	app.ScopedICAControllerKeeper = scopedICAControllerKeeper
+
 	// this line is used by starport scaffolding # stargate/app/beforeInitReturn
 
 	return app
@@ -633,6 +642,17 @@ func (app *App) ModuleAccountAddrs() map[string]bool {
 	}
 
 	return modAccAddrs
+}
+
+// BlockedAddrs returns all the app's module account addresses that are not
+// allowed to receive external tokens.
+func (app *App) BlockedAddrs() map[string]bool {
+	blockedAddrs := make(map[string]bool)
+	for acc := range maccPerms {
+		blockedAddrs[authtypes.NewModuleAddress(acc).String()] = !allowedReceivingModAcc[acc]
+	}
+
+	return blockedAddrs
 }
 
 // LegacyAmino returns SimApp's amino codec.
@@ -739,7 +759,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(crisistypes.ModuleName)
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
 	paramsKeeper.Subspace(ibchost.ModuleName)
-	paramsKeeper.Subspace(monitoringptypes.ModuleName)
+	paramsKeeper.Subspace(icacontrollertypes.SubModuleName)
 	paramsKeeper.Subspace(eightballmoduletypes.ModuleName)
 	// this line is used by starport scaffolding # stargate/app/paramSubspace
 
