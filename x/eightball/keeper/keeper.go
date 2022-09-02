@@ -26,7 +26,7 @@ type (
 		accountKeeper types.AccountKeeper
 		bankKeeper    types.BankKeeper
 
-		ICS4wrapper porttypes.ICS4Wrapper
+		ics4Wrapper porttypes.ICS4Wrapper
 
 		transferKeeper      transferkeeper.Keeper
 		scopedKeeper        capabilitykeeper.ScopedKeeper
@@ -43,7 +43,7 @@ func NewKeeper(
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
 
-	ics4wrapper porttypes.ICS4Wrapper,
+	ics4Wrapper porttypes.ICS4Wrapper,
 
 	transferKeeper transferkeeper.Keeper,
 	scopedKeeper        capabilitykeeper.ScopedKeeper,
@@ -64,7 +64,7 @@ func NewKeeper(
 		accountKeeper: accountKeeper,
 		bankKeeper:    bankKeeper,
 
-		ICS4wrapper: ics4wrapper,
+		ics4Wrapper: ics4Wrapper,
 
 		transferKeeper:      transferKeeper,
 		scopedKeeper:        scopedKeeper,
