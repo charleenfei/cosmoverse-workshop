@@ -374,6 +374,7 @@ func New(
 		app.TransferKeeper,
 		app.ScopedEightballKeeper,
 		app.ICAControllerKeeper,
+		app.MsgServiceRouter(),
 	)
 	eightballModule := eightballmodule.NewAppModule(appCodec, app.EightballKeeper, app.AccountKeeper, app.BankKeeper, app.TransferKeeper)
 

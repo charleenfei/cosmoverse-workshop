@@ -3,13 +3,14 @@ package keeper
 import (
 	"time"
 
+	"github.com/charleenfei/cosmoverse-workshop/x/eightball/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
 	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
 	transfertypes "github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
+	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
 )
 
 func (k Keeper) OnTransferAck(ctx sdk.Context, transferData transfertypes.FungibleTokenPacketData, ackSuccess bool) error {
@@ -20,8 +21,13 @@ func (k Keeper) OnTransferAck(ctx sdk.Context, transferData transfertypes.Fungib
 			return err
 		}
 
-			// getconnectionID from connect to dex , stub out for now
-		channelID, found := k.icacontrollerKeeper.GetActiveChannelID(ctx, ConnectionId, portID)
+		dexConnectionID, found := k.GetDexConnectionID(ctx)
+		if !found {
+			return types.ErrDexConnectionNotFound
+		}
+
+		// getconnectionID from connect to dex , stub out for now
+		channelID, found := k.icacontrollerKeeper.GetActiveChannelID(ctx, dexConnectionID, portID)
 		if !found {
 			sdkerrors.Wrapf(icatypes.ErrActiveChannelNotFound, "failed to retrieve active channel for port %s", portID)
 		}
@@ -44,7 +50,7 @@ func (k Keeper) OnTransferAck(ctx sdk.Context, transferData transfertypes.Fungib
 		// timeoutTimestamp set to max value with the unsigned bit shifted to sastisfy hermes timestamp conversion
 		// it is the responsibility of the auth module developer to ensure an appropriate timeout timestamp
 		timeoutTimestamp := ctx.BlockTime().Add(time.Minute).UnixNano()
-		_, err = k.icacontrollerKeeper.SendTx(ctx, chanCap, msg.ConnectionId, portID, packetData, uint64(timeoutTimestamp))
+		_, err = k.icacontrollerKeeper.SendTx(ctx, chanCap, dexConnectionID, portID, packetData, uint64(timeoutTimestamp))
 		if err != nil {
 			return err
 		}
