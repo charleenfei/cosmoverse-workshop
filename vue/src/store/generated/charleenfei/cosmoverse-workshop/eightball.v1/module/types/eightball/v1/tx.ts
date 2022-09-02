@@ -12,6 +12,13 @@ export interface MsgFeelingLucky {
 
 export interface MsgFeelingLuckyResponse {}
 
+export interface MsgConnectToDex {
+  creator: string;
+  connection_id: string;
+}
+
+export interface MsgConnectToDexResponse {}
+
 const baseMsgFeelingLucky: object = { creator: "" };
 
 export const MsgFeelingLucky = {
@@ -133,10 +140,130 @@ export const MsgFeelingLuckyResponse = {
   },
 };
 
+const baseMsgConnectToDex: object = { creator: "", connection_id: "" };
+
+export const MsgConnectToDex = {
+  encode(message: MsgConnectToDex, writer: Writer = Writer.create()): Writer {
+    if (message.creator !== "") {
+      writer.uint32(10).string(message.creator);
+    }
+    if (message.connection_id !== "") {
+      writer.uint32(18).string(message.connection_id);
+    }
+    return writer;
+  },
+
+  decode(input: Reader | Uint8Array, length?: number): MsgConnectToDex {
+    const reader = input instanceof Uint8Array ? new Reader(input) : input;
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = { ...baseMsgConnectToDex } as MsgConnectToDex;
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.creator = reader.string();
+          break;
+        case 2:
+          message.connection_id = reader.string();
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): MsgConnectToDex {
+    const message = { ...baseMsgConnectToDex } as MsgConnectToDex;
+    if (object.creator !== undefined && object.creator !== null) {
+      message.creator = String(object.creator);
+    } else {
+      message.creator = "";
+    }
+    if (object.connection_id !== undefined && object.connection_id !== null) {
+      message.connection_id = String(object.connection_id);
+    } else {
+      message.connection_id = "";
+    }
+    return message;
+  },
+
+  toJSON(message: MsgConnectToDex): unknown {
+    const obj: any = {};
+    message.creator !== undefined && (obj.creator = message.creator);
+    message.connection_id !== undefined &&
+      (obj.connection_id = message.connection_id);
+    return obj;
+  },
+
+  fromPartial(object: DeepPartial<MsgConnectToDex>): MsgConnectToDex {
+    const message = { ...baseMsgConnectToDex } as MsgConnectToDex;
+    if (object.creator !== undefined && object.creator !== null) {
+      message.creator = object.creator;
+    } else {
+      message.creator = "";
+    }
+    if (object.connection_id !== undefined && object.connection_id !== null) {
+      message.connection_id = object.connection_id;
+    } else {
+      message.connection_id = "";
+    }
+    return message;
+  },
+};
+
+const baseMsgConnectToDexResponse: object = {};
+
+export const MsgConnectToDexResponse = {
+  encode(_: MsgConnectToDexResponse, writer: Writer = Writer.create()): Writer {
+    return writer;
+  },
+
+  decode(input: Reader | Uint8Array, length?: number): MsgConnectToDexResponse {
+    const reader = input instanceof Uint8Array ? new Reader(input) : input;
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = {
+      ...baseMsgConnectToDexResponse,
+    } as MsgConnectToDexResponse;
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(_: any): MsgConnectToDexResponse {
+    const message = {
+      ...baseMsgConnectToDexResponse,
+    } as MsgConnectToDexResponse;
+    return message;
+  },
+
+  toJSON(_: MsgConnectToDexResponse): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  fromPartial(
+    _: DeepPartial<MsgConnectToDexResponse>
+  ): MsgConnectToDexResponse {
+    const message = {
+      ...baseMsgConnectToDexResponse,
+    } as MsgConnectToDexResponse;
+    return message;
+  },
+};
+
 /** Msg defines the Msg service. */
 export interface Msg {
-  /** this line is used by starport scaffolding # proto/tx/rpc */
   FeelingLucky(request: MsgFeelingLucky): Promise<MsgFeelingLuckyResponse>;
+  /** this line is used by starport scaffolding # proto/tx/rpc */
+  ConnectToDex(request: MsgConnectToDex): Promise<MsgConnectToDexResponse>;
 }
 
 export class MsgClientImpl implements Msg {
@@ -149,6 +276,14 @@ export class MsgClientImpl implements Msg {
     const promise = this.rpc.request("eightball.v1.Msg", "FeelingLucky", data);
     return promise.then((data) =>
       MsgFeelingLuckyResponse.decode(new Reader(data))
+    );
+  }
+
+  ConnectToDex(request: MsgConnectToDex): Promise<MsgConnectToDexResponse> {
+    const data = MsgConnectToDex.encode(request).finish();
+    const promise = this.rpc.request("eightball.v1.Msg", "ConnectToDex", data);
+    return promise.then((data) =>
+      MsgConnectToDexResponse.decode(new Reader(data))
     );
   }
 }

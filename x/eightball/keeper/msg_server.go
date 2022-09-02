@@ -59,3 +59,11 @@ func (k msgServer) FeelingLucky(goCtx context.Context, msg *types.MsgFeelingLuck
 
 	return &types.MsgFeelingLuckyResponse{}, nil
 }
+
+func (k msgServer) MsgConnectToDex(goCtx context.Context, msg *types.MsgFeelingLucky) (*types.MsgFeelingLuckyResponse, error) {
+	// ctx := sdk.UnwrapSDKContext(goCtx)
+
+	
+
+	return &types.MsgFeelingLuckyResponse{}, nil
+}
