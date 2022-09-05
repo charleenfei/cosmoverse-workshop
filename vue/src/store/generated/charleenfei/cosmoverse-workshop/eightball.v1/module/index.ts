@@ -4,13 +4,13 @@ import { StdFee } from "@cosmjs/launchpad";
 import { SigningStargateClient } from "@cosmjs/stargate";
 import { Registry, OfflineSigner, EncodeObject, DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
 import { Api } from "./rest";
-import { MsgConnectToDex } from "./types/eightball/v1/tx";
 import { MsgFeelingLucky } from "./types/eightball/v1/tx";
+import { MsgConnectToDex } from "./types/eightball/v1/tx";
 
 
 const types = [
-  ["/eightball.v1.MsgConnectToDex", MsgConnectToDex],
   ["/eightball.v1.MsgFeelingLucky", MsgFeelingLucky],
+  ["/eightball.v1.MsgConnectToDex", MsgConnectToDex],
   
 ];
 export const MissingWalletError = new Error("wallet is required");
@@ -43,8 +43,8 @@ const txClient = async (wallet: OfflineSigner, { addr: addr }: TxClientOptions =
 
   return {
     signAndBroadcast: (msgs: EncodeObject[], { fee, memo }: SignAndBroadcastOptions = {fee: defaultFee, memo: ""}) => client.signAndBroadcast(address, msgs, fee,memo),
-    msgConnectToDex: (data: MsgConnectToDex): EncodeObject => ({ typeUrl: "/eightball.v1.MsgConnectToDex", value: MsgConnectToDex.fromPartial( data ) }),
     msgFeelingLucky: (data: MsgFeelingLucky): EncodeObject => ({ typeUrl: "/eightball.v1.MsgFeelingLucky", value: MsgFeelingLucky.fromPartial( data ) }),
+    msgConnectToDex: (data: MsgConnectToDex): EncodeObject => ({ typeUrl: "/eightball.v1.MsgConnectToDex", value: MsgConnectToDex.fromPartial( data ) }),
     
   };
 };

@@ -5,6 +5,7 @@ import (
 
 	"github.com/charleenfei/cosmoverse-workshop/x/eightball/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
 	transfertypes "github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
@@ -34,12 +35,12 @@ func (k msgServer) FeelingLucky(goCtx context.Context, msg *types.MsgFeelingLuck
 
 	// check if there is already a fortune belonging to the msg sender, if there is reject the tx
 	for _, fortune := range fortunes {
-		if fortune.Owner == msg.Creator {
+		if fortune.Owner == msg.Sender {
 			return nil, types.ErrAlreadyFortunate
 		}
 	}
 
-	sender, err := sdk.AccAddressFromBech32(msg.Creator)
+	sender, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
@@ -52,6 +53,7 @@ func (k msgServer) FeelingLucky(goCtx context.Context, msg *types.MsgFeelingLuck
 	// send an IBC token transfer to the addr owned by the eightball module account on the simple-dex host chain
 	eightballAddr := k.accountKeeper.GetModuleAddress(types.ModuleName)
 
+	// use connection ID to get the ICA account addr below
 	dexConnectionID, found := k.GetDexConnectionID(ctx)
 	if !found {
 		return nil, types.ErrDexConnectionNotFound
@@ -69,7 +71,8 @@ func (k msgServer) FeelingLucky(goCtx context.Context, msg *types.MsgFeelingLuck
 
 	eightballICAAddr, found := k.icacontrollerKeeper.GetInterchainAccountAddress(ctx, dexConnectionID, portID)
 	if !found {
-		return nil, status.Errorf(codes.NotFound, "no account found for portID %s", portID)	}
+		return nil, status.Errorf(codes.NotFound, "no account found for portID %s", portID)
+	}
 
 	k.transferKeeper.SendTransfer(
 		ctx,
@@ -78,7 +81,7 @@ func (k msgServer) FeelingLucky(goCtx context.Context, msg *types.MsgFeelingLuck
 		*msg.Offering,
 		eightballAddr,
 		eightballICAAddr,
-		clienttypes.NewHeight(1, 110),
+		clienttypes.ZeroHeight(),
 		0,
 	)
 
@@ -108,10 +111,15 @@ func (k msgServer) ConnectToDex(goCtx context.Context, msg *types.MsgConnectToDe
 		return nil, err
 	}
 
-	// NOTE: The sdk msg handler creates a new EventManager, so events must be correctly propagated back to the current context
 	ctx.EventManager().EmitEvents(res.GetEvents())
+	firstMsgResponse := res.MsgResponses[0]
+	channelOpenInitResponse, ok := firstMsgResponse.GetCachedValue().(*channeltypes.MsgChannelOpenInitResponse)
 
-	// TODO: how to know when channel is created to set channel id?
+	if !ok {
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidType, "failed to covert %T message response to %T", firstMsgResponse.GetCachedValue(), &channeltypes.MsgChannelOpenInitResponse{})
+	}
+
+	k.SetDexChannelID(ctx, channelOpenInitResponse.ChannelId)
 
 	if err := k.icacontrollerKeeper.RegisterInterchainAccount(ctx, msg.ConnectionId, eightballAddr.String()); err != nil {
 		return nil, err

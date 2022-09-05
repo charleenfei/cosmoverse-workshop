@@ -174,21 +174,6 @@ export default {
 		},
 		
 		
-		async sendMsgConnectToDex({ rootGetters }, { value, fee = [], memo = '' }) {
-			try {
-				const txClient=await initTxClient(rootGetters)
-				const msg = await txClient.msgConnectToDex(value)
-				const result = await txClient.signAndBroadcast([msg], {fee: { amount: fee, 
-	gas: "200000" }, memo})
-				return result
-			} catch (e) {
-				if (e == MissingWalletError) {
-					throw new Error('TxClient:MsgConnectToDex:Init Could not initialize signing client. Wallet is required.')
-				}else{
-					throw new Error('TxClient:MsgConnectToDex:Send Could not broadcast Tx: '+ e.message)
-				}
-			}
-		},
 		async sendMsgFeelingLucky({ rootGetters }, { value, fee = [], memo = '' }) {
 			try {
 				const txClient=await initTxClient(rootGetters)
@@ -204,20 +189,22 @@ export default {
 				}
 			}
 		},
-		
-		async MsgConnectToDex({ rootGetters }, { value }) {
+		async sendMsgConnectToDex({ rootGetters }, { value, fee = [], memo = '' }) {
 			try {
 				const txClient=await initTxClient(rootGetters)
 				const msg = await txClient.msgConnectToDex(value)
-				return msg
+				const result = await txClient.signAndBroadcast([msg], {fee: { amount: fee, 
+	gas: "200000" }, memo})
+				return result
 			} catch (e) {
 				if (e == MissingWalletError) {
 					throw new Error('TxClient:MsgConnectToDex:Init Could not initialize signing client. Wallet is required.')
-				} else{
-					throw new Error('TxClient:MsgConnectToDex:Create Could not create message: ' + e.message)
+				}else{
+					throw new Error('TxClient:MsgConnectToDex:Send Could not broadcast Tx: '+ e.message)
 				}
 			}
 		},
+		
 		async MsgFeelingLucky({ rootGetters }, { value }) {
 			try {
 				const txClient=await initTxClient(rootGetters)
@@ -228,6 +215,19 @@ export default {
 					throw new Error('TxClient:MsgFeelingLucky:Init Could not initialize signing client. Wallet is required.')
 				} else{
 					throw new Error('TxClient:MsgFeelingLucky:Create Could not create message: ' + e.message)
+				}
+			}
+		},
+		async MsgConnectToDex({ rootGetters }, { value }) {
+			try {
+				const txClient=await initTxClient(rootGetters)
+				const msg = await txClient.msgConnectToDex(value)
+				return msg
+			} catch (e) {
+				if (e == MissingWalletError) {
+					throw new Error('TxClient:MsgConnectToDex:Init Could not initialize signing client. Wallet is required.')
+				} else{
+					throw new Error('TxClient:MsgConnectToDex:Create Could not create message: ' + e.message)
 				}
 			}
 		},

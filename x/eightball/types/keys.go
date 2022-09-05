@@ -1,6 +1,8 @@
 package types
 
-import fmt "fmt"
+import (
+	"fmt"
+)
 
 const (
 	// ModuleName defines the module name

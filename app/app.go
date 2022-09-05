@@ -98,6 +98,7 @@ import (
 	eightballmodulekeeper "github.com/charleenfei/cosmoverse-workshop/x/eightball/keeper"
 	eightballmoduletypes "github.com/charleenfei/cosmoverse-workshop/x/eightball/types"
 
+	ica "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts"
 	icacontroller "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller"
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/keeper"
 	icacontrollertypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/types"
@@ -385,19 +386,22 @@ func New(
 		app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
 		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper,
 	)
-	var (
-		transferModule    = transfer.NewAppModule(app.TransferKeeper)
-		transferIBCModule = eightballmodule.NewIBCMiddleware(transfer.NewIBCModule(app.TransferKeeper), app.EightballKeeper)
-
-		icaControllerModule    = icacontroller.NewAppModule(app.ICAControllerKeeper)
-		icaControllerIBCModule = eightballmodule.NewIBCMiddleware(icacontroller.NewIBCModule(app.ICAControllerKeeper), app.EightballKeeper)
-	)
 
 	app.ICAControllerKeeper = icacontrollerkeeper.NewKeeper(
 		appCodec, keys[icacontrollertypes.StoreKey], app.GetSubspace(icacontrollertypes.SubModuleName),
 		app.EightballKeeper, // 8ball module is wrapping ICS-4
 		app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
 		scopedICAControllerKeeper, app.MsgServiceRouter(),
+	)
+
+	var (
+		transferModule    = transfer.NewAppModule(app.TransferKeeper)
+		transferIBCModule = eightballmodule.NewIBCMiddleware(transfer.NewIBCModule(app.TransferKeeper), app.EightballKeeper)
+
+		// TODO: replace nil (host module)?
+		icaModule = ica.NewAppModule(&app.ICAControllerKeeper, nil)
+		// TODO: replace nil (auth module) in ibc-go v6
+		icaControllerIBCModule = eightballmodule.NewIBCMiddleware(icacontroller.NewIBCModule(app.ICAControllerKeeper, nil), app.EightballKeeper)
 	)
 
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
@@ -417,7 +421,7 @@ func New(
 	ibcRouter := ibcporttypes.NewRouter()
 	ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferIBCModule)
 	// TODO
-	ibcRouter.AddRoute(eightballmoduletypes.ModuleName, icaControllerModule)
+	ibcRouter.AddRoute(icacontrollertypes.SubModuleName, icaControllerIBCModule)
 	// this line is used by starport scaffolding # ibc/app/router
 	app.IBCKeeper.SetRouter(ibcRouter)
 
@@ -452,7 +456,7 @@ func New(
 		ibc.NewAppModule(app.IBCKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 		transferModule,
-		icaControllerModule,
+		icaModule,
 		eightballModule,
 		// this line is used by starport scaffolding # stargate/app/appModule
 	)

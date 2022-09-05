@@ -20,8 +20,6 @@ import (
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-
-	ibctransferkeeper "github.com/cosmos/ibc-go/v3/modules/apps/transfer/keeper"
 )
 
 var (
@@ -105,7 +103,7 @@ type AppModule struct {
 	accountKeeper types.AccountKeeper
 	bankKeeper    types.BankKeeper
 
-	transferkeeper ibctransferkeeper.Keeper
+	transferkeeper types.TransferKeeper
 }
 
 func NewAppModule(
@@ -113,7 +111,7 @@ func NewAppModule(
 	keeper eightballkeeper.Keeper,
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
-	transferkeeper ibctransferkeeper.Keeper,
+	transferkeeper types.TransferKeeper,
 ) AppModule {
 	return AppModule{
 		AppModuleBasic: NewAppModuleBasic(cdc),
