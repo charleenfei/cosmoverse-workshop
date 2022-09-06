@@ -112,6 +112,7 @@ func (k msgServer) ConnectToDex(goCtx context.Context, msg *types.MsgConnectToDe
 	}
 
 	ctx.EventManager().EmitEvents(res.GetEvents())
+
 	firstMsgResponse := res.MsgResponses[0]
 	channelOpenInitResponse, ok := firstMsgResponse.GetCachedValue().(*channeltypes.MsgChannelOpenInitResponse)
 

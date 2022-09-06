@@ -1,9 +1,19 @@
 package keeper
 
 import (
+	"math/rand"
+
 	"github.com/charleenfei/cosmoverse-workshop/x/eightball/types"
+
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
+	"google.golang.org/protobuf/proto"
+
+	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
+
+	simpledextypes "github.com/charleenfei/simple-dex/types"
 )
 
 // SetFortune set a specific fortune in the store from its index
@@ -62,19 +72,27 @@ func (k Keeper) GetAllFortunes(ctx sdk.Context) (list []types.Fortune) {
 	return
 }
 
-// fortunes := k.GetAllFortunes(ctx)
-	// var availableFortunes []types.Fortune
+func (k Keeper) MintFortune(ctx sdk.Context, data icatypes.InterchainAccountPacketData) (types.Fortune, error) {
+	fortunes := k.GetAllFortunes(ctx)
+	var availableFortunes []types.Fortune
 
-	// for _, fortune := range fortunes {
-	// 	if fortune.Owner == msg.Creator {
-	// 		fmt.Printf("you've already got a fortune! it's this one: %s ", fortune.Fortune)
-	// 	}
-	// 	if fortune.Owner == "" {
-	// 		availableFortunes = append(availableFortunes, fortune)
-	// 	}
-	// }
+	for _, fortune := range fortunes {
+		if fortune.Owner == "" {
+			availableFortunes = append(availableFortunes, fortune)
+		}
+	}
 
-	// selectedFortune := availableFortunes[rand.Intn(len(availableFortunes) - 1)]
-	// selectedFortune.Owner = msg.Creator
+	selectedFortune := availableFortunes[rand.Intn(len(availableFortunes)-1)]
 
-	// k.SetFortune(ctx, selectedFortune)
+	// TODO: simple dex -> public to import types
+	msgResponse := &simpledextypes.MsgSwapResponse{}
+	if err := proto.Unmarshal(data.Data, msgResponse); err != nil {
+		return types.Fortune{}, sdkerrors.Wrapf(sdkerrors.ErrJSONUnmarshal, "cannot unmarshal delegate response message: %s", err.Error())
+	}
+
+	// TODO: set owner and price
+	selectedFortune.Owner = getSenderFromDatafromMsgResponse
+	k.SetFortune(ctx, selectedFortune)
+
+	return selectedFortune, nil
+}

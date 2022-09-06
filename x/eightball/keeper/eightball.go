@@ -11,6 +11,7 @@ import (
 	transfertypes "github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
 	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
+	// simpledextypes "github.com/charleenfei/simple-dex/types"
 )
 
 func (k Keeper) OnTransferAck(ctx sdk.Context, transferData transfertypes.FungibleTokenPacketData, ackSuccess bool) error {
@@ -26,7 +27,6 @@ func (k Keeper) OnTransferAck(ctx sdk.Context, transferData transfertypes.Fungib
 			return types.ErrDexConnectionNotFound
 		}
 
-		// getconnectionID from connect to dex , stub out for now
 		channelID, found := k.icacontrollerKeeper.GetActiveChannelID(ctx, dexConnectionID, portID)
 		if !found {
 			sdkerrors.Wrapf(icatypes.ErrActiveChannelNotFound, "failed to retrieve active channel for port %s", portID)
@@ -37,6 +37,20 @@ func (k Keeper) OnTransferAck(ctx sdk.Context, transferData transfertypes.Fungib
 		if !found {
 			sdkerrors.Wrap(channeltypes.ErrChannelCapabilityNotFound, "module does not own channel capability")
 		}
+
+		// eightballICAAddr, found := k.icacontrollerKeeper.GetInterchainAccountAddress(ctx, dexConnectionID, portID)
+		// if !found {
+		// 	return nil, status.Errorf(codes.NotFound, "no account found for portID %s", portID)
+		// }
+
+		// msgSwap := &simpledextypes.MsgSwap{
+		// 	Sender:
+		// 	Offer:
+		// 	MinAsk:
+		// 	PortId:
+		// 	ChannelId:
+		// 	Receiver:
+		// }
 
 		data, err := icatypes.SerializeCosmosTx(k.cdc, []sdk.Msg{MsgSwap})
 		if err != nil {
@@ -61,9 +75,10 @@ func (k Keeper) OnTransferAck(ctx sdk.Context, transferData transfertypes.Fungib
 }
 
 func (k Keeper) OnICAAck(ctx sdk.Context, icaData icatypes.InterchainAccountPacketData, ackSuccess bool) error {
-	// if ackSuccess {
-	// 	k.
-	// }
+	if ackSuccess {
+		// TODO: need some way to get receiver of transfer addr (owner of fortune) from simple dex & price that the owner paid
+		k.MintFortune(ctx, icaData)
+	}
 
 	return nil
 }
