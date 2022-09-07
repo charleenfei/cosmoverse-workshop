@@ -33,7 +33,7 @@ func CmdFeelingLucky() *cobra.Command {
 
 			msg := types.NewMsgFeelingLucky(
 				clientCtx.GetFromAddress().String(),
-				&coin,
+				coin,
 			)
 			if err := msg.ValidateBasic(); err != nil {
 				return err

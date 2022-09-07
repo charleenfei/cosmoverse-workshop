@@ -1,19 +1,12 @@
 package keeper
 
 import (
-	"math/rand"
-
 	"github.com/charleenfei/cosmoverse-workshop/x/eightball/types"
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-
-	"google.golang.org/protobuf/proto"
 
 	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
-
-	simpledextypes "github.com/charleenfei/simple-dex/types"
 )
 
 // SetFortune set a specific fortune in the store from its index
@@ -44,6 +37,30 @@ func (k Keeper) GetFortune(
 	return val, true
 }
 
+func (k Keeper) SetUnownedFortunes(ctx sdk.Context, fortunes []types.Fortune) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FortuneKeyPrefix))
+	fortuneList := types.FortuneList{
+		Fortunes: fortunes,
+	}
+	b := types.ModuleCdc.MustMarshal(&fortuneList)
+	store.Set(types.UnownedFortuneKey(), b)
+}
+
+func (k Keeper) GetUnownedFortunes(
+	ctx sdk.Context,
+
+) (val types.FortuneList, found bool) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FortuneKeyPrefix))
+
+	b := store.Get(types.UnownedFortuneKey())
+	if b == nil {
+		return val, false
+	}
+
+	k.cdc.MustUnmarshal(b, &val)
+	return val, true
+}
+
 // RemoveFortunes removes a fortunes from the store
 func (k Keeper) RemoveFortunes(
 	ctx sdk.Context,
@@ -56,8 +73,8 @@ func (k Keeper) RemoveFortunes(
 	))
 }
 
-// GetAllFortunes returns all fortunes
-func (k Keeper) GetAllFortunes(ctx sdk.Context) (list []types.Fortune) {
+// GetAllFortunes returns all owned fortunes
+func (k Keeper) GetAllOwnedFortunes(ctx sdk.Context) (list []types.Fortune) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FortuneKeyPrefix))
 	iterator := sdk.KVStorePrefixIterator(store, []byte{})
 
@@ -72,26 +89,26 @@ func (k Keeper) GetAllFortunes(ctx sdk.Context) (list []types.Fortune) {
 	return
 }
 
-func (k Keeper) MintFortune(ctx sdk.Context, data icatypes.InterchainAccountPacketData) (types.Fortune, error) {
-	fortunes := k.GetAllFortunes(ctx)
+func (k Keeper) MintFortune(ctx sdk.Context, data icatypes.InterchainAccountPacketData, icaPacketSequence uint64) (types.Fortune, error) {
+	fortuneList, _ := k.GetUnownedFortunes(ctx)
 	var availableFortunes []types.Fortune
 
-	for _, fortune := range fortunes {
+	for _, fortune := range fortuneList.Fortunes {
 		if fortune.Owner == "" {
 			availableFortunes = append(availableFortunes, fortune)
 		}
 	}
 
-	selectedFortune := availableFortunes[rand.Intn(len(availableFortunes)-1)]
+	// use block time here to generate random index to enforce determinism
+	randInt := int(ctx.BlockTime().UnixNano()) % len(availableFortunes)
+	selectedFortune := availableFortunes[randInt]
 
-	// TODO: simple dex -> public to import types
-	msgResponse := &simpledextypes.MsgSwapResponse{}
-	if err := proto.Unmarshal(data.Data, msgResponse); err != nil {
-		return types.Fortune{}, sdkerrors.Wrapf(sdkerrors.ErrJSONUnmarshal, "cannot unmarshal delegate response message: %s", err.Error())
+	initialOfferer, found := k.GetICASeqToOfferer(ctx, icaPacketSequence)
+	if !found {
+		return types.Fortune{}, types.ErrOffererNotFound
 	}
 
-	// TODO: set owner and price
-	selectedFortune.Owner = getSenderFromDatafromMsgResponse
+	selectedFortune.Owner = initialOfferer.String()
 	k.SetFortune(ctx, selectedFortune)
 
 	return selectedFortune, nil

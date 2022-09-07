@@ -7,6 +7,7 @@ var _ binary.ByteOrder
 const (
 	// FortuneKeyPrefix is the prefix to retrieve Fortunes
 	FortuneKeyPrefix = "Fortune/value/"
+	UnownedFortuneKeyString = "UnownedFortunes"
 )
 
 // FortuneKey returns the store key to retrieve a Fortune from the index fields
@@ -20,4 +21,9 @@ func FortuneKey(
 	key = append(key, []byte("/")...)
 
 	return key
+}
+
+func UnownedFortuneKey(
+) []byte {
+	return []byte(UnownedFortuneKeyString)
 }

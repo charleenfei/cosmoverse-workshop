@@ -147,9 +147,9 @@ func (im IBCMiddleware) OnAcknowledgementPacket(
 	var transferData transfertypes.FungibleTokenPacketData
 	var icaData icatypes.InterchainAccountPacketData
 	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &transferData); err == nil {
-		im.keeper.OnTransferAck(ctx, transferData, ack.Success())
+		im.keeper.OnTransferAck(ctx, transferData, packet.Sequence, ack.Success())
 	} else if err := icatypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &icaData); err == nil {
-		im.keeper.OnICAAck(ctx, icaData, ack.Success())
+		im.keeper.OnICAAck(ctx, icaData, packet.Sequence, ack.Success())
 	} else {
 		return errors.New("packet data invalid")
 	}

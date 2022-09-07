@@ -35,14 +35,25 @@ var (
 	// PortKey defines the key to store the port ID in store
 	PortKey = KeyPrefix("eightball-port-")
 
-	DexChannelKeyPrefix    = "dexChannel"
-	DexConnectionKeyPrefix = "dexConnection"
+	DexTransferChannelKeyPrefix = "dexTransferChannel"
+	DexConnectionKeyPrefix      = "dexConnection"
+
+	TransferSeqKeyPrefix = "transferSeq"
+	ICASeqKeyPrefix      = "icaSeq"
 )
 
-func KeyDexChannel(eightballModuleName string) []byte {
-	return []byte(fmt.Sprintf("%s/%s", DexChannelKeyPrefix, eightballModuleName))
+func KeyDexTransferChannel(eightballModuleName string) []byte {
+	return []byte(fmt.Sprintf("%s/%s", DexTransferChannelKeyPrefix, eightballModuleName))
 }
 
 func KeyDexConnection(eightballModuleName string) []byte {
 	return []byte(fmt.Sprintf("%s/%s", DexConnectionKeyPrefix, eightballModuleName))
+}
+
+func KeyTransferSeq(transferSeq uint64) []byte {
+	return []byte(fmt.Sprintf("%s/%v", TransferSeqKeyPrefix, transferSeq))
+}
+
+func KeyICASeq(icaSeq uint64) []byte {
+	return []byte(fmt.Sprintf("%s/%v", ICASeqKeyPrefix, icaSeq))
 }

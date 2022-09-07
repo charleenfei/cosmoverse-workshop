@@ -1,12 +1,13 @@
 import { txClient, queryClient, MissingWalletError , registry} from './module'
 
 import { Fortune } from "./module/types/eightball/v1/fortunes"
+import { FortuneList } from "./module/types/eightball/v1/fortunes"
 import { Params } from "./module/types/eightball/v1/params"
 import { QueryParamsRequest } from "./module/types/eightball/v1/query"
 import { QueryParamsResponse } from "./module/types/eightball/v1/query"
 
 
-export { Fortune, Params, QueryParamsRequest, QueryParamsResponse };
+export { Fortune, FortuneList, Params, QueryParamsRequest, QueryParamsResponse };
 
 async function initTxClient(vuexGetters) {
 	return await txClient(vuexGetters['common/wallet/signer'], {
@@ -49,6 +50,7 @@ const getDefaultState = () => {
 				
 				_Structure: {
 						Fortune: getStructure(Fortune.fromPartial({})),
+						FortuneList: getStructure(FortuneList.fromPartial({})),
 						Params: getStructure(Params.fromPartial({})),
 						QueryParamsRequest: getStructure(QueryParamsRequest.fromPartial({})),
 						QueryParamsResponse: getStructure(QueryParamsResponse.fromPartial({})),

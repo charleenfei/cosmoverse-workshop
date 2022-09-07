@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"time"
 
 	"github.com/charleenfei/cosmoverse-workshop/x/eightball/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -31,10 +32,10 @@ var _ types.MsgServer = msgServer{}
 func (k msgServer) FeelingLucky(goCtx context.Context, msg *types.MsgFeelingLucky) (*types.MsgFeelingLuckyResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	fortunes := k.GetAllFortunes(ctx)
+	fortuneList, _ := k.GetUnownedFortunes(ctx)
 
 	// check if there is already a fortune belonging to the msg sender, if there is reject the tx
-	for _, fortune := range fortunes {
+	for _, fortune := range fortuneList.Fortunes {
 		if fortune.Owner == msg.Sender {
 			return nil, types.ErrAlreadyFortunate
 		}
@@ -46,44 +47,67 @@ func (k msgServer) FeelingLucky(goCtx context.Context, msg *types.MsgFeelingLuck
 	}
 
 	// send offering to eightball module account to be transferred over to simple-dex
-	if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, sender, types.ModuleName, sdk.NewCoins(*msg.Offering)); err != nil {
+	// TODO: make offering non-nullable
+	if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, sender, types.ModuleName, sdk.NewCoins(msg.Offering)); err != nil {
 		return nil, err
 	}
 
 	// send an IBC token transfer to the addr owned by the eightball module account on the simple-dex host chain
-	eightballAddr := k.accountKeeper.GetModuleAddress(types.ModuleName)
 
-	// use connection ID to get the ICA account addr below
+	// get simple-dex chain connection ID & port ID to get the ICA account addr below
 	dexConnectionID, found := k.GetDexConnectionID(ctx)
 	if !found {
 		return nil, types.ErrDexConnectionNotFound
 	}
 
-	dexChannelId, found := k.GetDexChannelID(ctx)
-	if !found {
-		return nil, types.ErrDexConnectionNotFound
-	}
+	eightballAddr := k.accountKeeper.GetModuleAddress(types.ModuleName)
 
 	portID, err := icatypes.NewControllerPortID(eightballAddr.String())
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "could not find account: %s", err)
 	}
 
+	// TODO: store ICA address so you don't have to recreate
 	eightballICAAddr, found := k.icacontrollerKeeper.GetInterchainAccountAddress(ctx, dexConnectionID, portID)
 	if !found {
 		return nil, status.Errorf(codes.NotFound, "no account found for portID %s", portID)
 	}
 
-	k.transferKeeper.SendTransfer(
+	// collect the channel id, and ica address to send an IBC transfer from the eightball module account to the ica account
+	// it controls on host chain simple-dex
+	dexChannelId, found := k.GetDexTransferChannelID(ctx)
+	if !found {
+		return nil, types.ErrDexConnectionNotFound
+	}
+
+	// grab the next sequence in the channel which will be the sequence number of this transfer packet
+	sequence, found := k.ibcKeeper.ChannelKeeper.GetNextSequenceSend(ctx, k.transferKeeper.GetPort(ctx), dexChannelId)
+	if !found {
+		return nil, sdkerrors.Wrapf(
+			channeltypes.ErrSequenceSendNotFound,
+			"source port: %s, source channel: %s", k.transferKeeper.GetPort(ctx), dexChannelId,
+		)
+	}
+
+	//  save k/v pair which associates the sender of the FeelingLucky msg w the sequence number of transfer
+	k.SetTransferSeqToOfferer(ctx, sequence, sender)
+
+	// send an IBC transfer from the eightball module account to the ica account
+	// it controls on host chain simple-dex
+	err = k.transferKeeper.SendTransfer(
 		ctx,
 		k.transferKeeper.GetPort(ctx),
 		dexChannelId,
-		*msg.Offering,
+		msg.Offering,
 		eightballAddr,
 		eightballICAAddr,
 		clienttypes.ZeroHeight(),
-		0,
+		uint64(ctx.BlockTime().Add(6*time.Hour).UnixNano()),
 	)
+
+	if err != nil {
+		return nil, err
+	}
 
 	return &types.MsgFeelingLuckyResponse{}, nil
 }
@@ -103,24 +127,31 @@ func (k msgServer) ConnectToDex(goCtx context.Context, msg *types.MsgConnectToDe
 		eightballAddr.String(),
 	)
 
-	// TODO: is this correct?
-	handler := k.msgRouter.Handler(msg)
+	res, err := k.ibcKeeper.ChannelOpenInit(goCtx, channOpenMsg)
 
-	res, err := handler(ctx, channOpenMsg)
+	// // TODO: is this correct?
+	// handler := k.msgRouter.Handler(msg)
+
+	// res, err := handler(ctx, channOpenMsg)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// ctx.EventManager().EmitEvents(res.GetEvents())
+
+	// var txMsgData sdk.TxMsgData
+	// proto.Unmarshal(res.Data, &txMsgData)
+
+	// firstMsgResponseData := txMsgData.Data[0].Data
+	// firstMsgResponse :=
+	// channelOpenInitResponse, ok := firstMsgResponse.GetCachedValue().(*channeltypes.MsgChannelOpenInitResponse)
+
 	if err != nil {
 		return nil, err
+		// sdkerrors.Wrapf(sdkerrors.ErrInvalidType, "failed to covert %T message response to %T", firstMsgResponse.GetCachedValue(), &channeltypes.MsgChannelOpenInitResponse{})
 	}
 
-	ctx.EventManager().EmitEvents(res.GetEvents())
-
-	firstMsgResponse := res.MsgResponses[0]
-	channelOpenInitResponse, ok := firstMsgResponse.GetCachedValue().(*channeltypes.MsgChannelOpenInitResponse)
-
-	if !ok {
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidType, "failed to covert %T message response to %T", firstMsgResponse.GetCachedValue(), &channeltypes.MsgChannelOpenInitResponse{})
-	}
-
-	k.SetDexChannelID(ctx, channelOpenInitResponse.ChannelId)
+	k.SetDexTransferChannelID(ctx, res.ChannelId)
 
 	if err := k.icacontrollerKeeper.RegisterInterchainAccount(ctx, msg.ConnectionId, eightballAddr.String()); err != nil {
 		return nil, err
