@@ -1,6 +1,8 @@
 syntax = "proto3";
 package eightball.v1;
 
+import "gogoproto/gogo.proto";
+
 option go_package = "github.com/charleenfei/cosmoverse-workshop/x/eightball/types";
 
 message Fortune {
@@ -10,3 +12,6 @@ message Fortune {
   
 }
 
+message FortuneList {
+repeated Fortune fortunes = 1 [(gogoproto.nullable) = false];
+}

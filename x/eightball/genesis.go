@@ -9,10 +9,8 @@ import (
 // InitGenesis initializes the capability module's state from a provided genesis
 // state.
 func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) {
-	// Set all the fortunes
-	for _, elem := range genState.FortunesList {
-		k.SetFortune(ctx, elem)
-	}
+	// Set all the fortune
+	k.SetUnownedFortunes(ctx, genState.FortunesList)
 	// this line is used by starport scaffolding # genesis/module/init
 	k.SetParams(ctx, genState.Params)
 }
@@ -22,7 +20,8 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 	genesis := types.DefaultGenesis()
 	genesis.Params = k.GetParams(ctx)
 
-	genesis.FortunesList = k.GetAllFortunes(ctx)
+	fortunesList, _ := k.GetUnownedFortunes(ctx)
+	genesis.FortunesList = fortunesList.Fortunes
 	// this line is used by starport scaffolding # genesis/module/export
 
 	return genesis

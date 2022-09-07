@@ -3,6 +3,7 @@ module github.com/charleenfei/cosmoverse-workshop
 go 1.18
 
 require (
+	github.com/charleenfei/simple-dex/simple-dex v0.0.0-20220906153721-3a7393cbdc4a
 	github.com/cosmos/cosmos-sdk v0.45.5
 	github.com/cosmos/ibc-go/v3 v3.0.1
 	github.com/gogo/protobuf v1.3.3

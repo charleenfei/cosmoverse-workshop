@@ -16,9 +16,9 @@ service Msg {
 }
 
 message MsgFeelingLucky {
-  string creator = 1;
+  string sender = 1;
   // TODO: non-nullable gogoproto
-  cosmos.base.v1beta1.Coin offering = 2;
+  cosmos.base.v1beta1.Coin offering = 2 [(gogoproto.nullable)     = false];
 }
 
 message MsgFeelingLuckyResponse {
@@ -29,8 +29,9 @@ message MsgFeelingLuckyResponse {
 
 message MsgConnectToDex {
   string creator = 1;
-  string connection_id              = 2 [(gogoproto.moretags) = "yaml:\"connection_id\""];
+  string connection_id = 2;
 }
 
 message MsgConnectToDexResponse {
+  
 }

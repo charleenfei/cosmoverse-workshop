@@ -2,8 +2,11 @@ package keeper
 
 import (
 	"github.com/charleenfei/cosmoverse-workshop/x/eightball/types"
+
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
 )
 
 // SetFortune set a specific fortune in the store from its index
@@ -34,6 +37,30 @@ func (k Keeper) GetFortune(
 	return val, true
 }
 
+func (k Keeper) SetUnownedFortunes(ctx sdk.Context, fortunes []types.Fortune) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FortuneKeyPrefix))
+	fortuneList := types.FortuneList{
+		Fortunes: fortunes,
+	}
+	b := types.ModuleCdc.MustMarshal(&fortuneList)
+	store.Set(types.UnownedFortuneKey(), b)
+}
+
+func (k Keeper) GetUnownedFortunes(
+	ctx sdk.Context,
+
+) (val types.FortuneList, found bool) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FortuneKeyPrefix))
+
+	b := store.Get(types.UnownedFortuneKey())
+	if b == nil {
+		return val, false
+	}
+
+	k.cdc.MustUnmarshal(b, &val)
+	return val, true
+}
+
 // RemoveFortunes removes a fortunes from the store
 func (k Keeper) RemoveFortunes(
 	ctx sdk.Context,
@@ -46,8 +73,8 @@ func (k Keeper) RemoveFortunes(
 	))
 }
 
-// GetAllFortunes returns all fortunes
-func (k Keeper) GetAllFortunes(ctx sdk.Context) (list []types.Fortune) {
+// GetAllFortunes returns all owned fortunes
+func (k Keeper) GetAllOwnedFortunes(ctx sdk.Context) (list []types.Fortune) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FortuneKeyPrefix))
 	iterator := sdk.KVStorePrefixIterator(store, []byte{})
 
@@ -62,19 +89,27 @@ func (k Keeper) GetAllFortunes(ctx sdk.Context) (list []types.Fortune) {
 	return
 }
 
-// fortunes := k.GetAllFortunes(ctx)
-	// var availableFortunes []types.Fortune
+func (k Keeper) MintFortune(ctx sdk.Context, data icatypes.InterchainAccountPacketData, icaPacketSequence uint64) (types.Fortune, error) {
+	fortuneList, _ := k.GetUnownedFortunes(ctx)
+	var availableFortunes []types.Fortune
 
-	// for _, fortune := range fortunes {
-	// 	if fortune.Owner == msg.Creator {
-	// 		fmt.Printf("you've already got a fortune! it's this one: %s ", fortune.Fortune)
-	// 	}
-	// 	if fortune.Owner == "" {
-	// 		availableFortunes = append(availableFortunes, fortune)
-	// 	}
-	// }
+	for _, fortune := range fortuneList.Fortunes {
+		if fortune.Owner == "" {
+			availableFortunes = append(availableFortunes, fortune)
+		}
+	}
 
-	// selectedFortune := availableFortunes[rand.Intn(len(availableFortunes) - 1)]
-	// selectedFortune.Owner = msg.Creator
+	// use block time here to generate random index to enforce determinism
+	randInt := int(ctx.BlockTime().UnixNano()) % len(availableFortunes)
+	selectedFortune := availableFortunes[randInt]
 
-	// k.SetFortune(ctx, selectedFortune)
+	initialOfferer, found := k.GetICASeqToOfferer(ctx, icaPacketSequence)
+	if !found {
+		return types.Fortune{}, types.ErrOffererNotFound
+	}
+
+	selectedFortune.Owner = initialOfferer.String()
+	k.SetFortune(ctx, selectedFortune)
+
+	return selectedFortune, nil
+}

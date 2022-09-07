@@ -1,5 +1,9 @@
 package types
 
+import (
+	"fmt"
+)
+
 const (
 	// ModuleName defines the module name
 	ModuleName = "eightball"
@@ -30,4 +34,26 @@ func KeyPrefix(p string) []byte {
 var (
 	// PortKey defines the key to store the port ID in store
 	PortKey = KeyPrefix("eightball-port-")
+
+	DexTransferChannelKeyPrefix = "dexTransferChannel"
+	DexConnectionKeyPrefix      = "dexConnection"
+
+	TransferSeqKeyPrefix = "transferSeq"
+	ICASeqKeyPrefix      = "icaSeq"
 )
+
+func KeyDexTransferChannel(eightballModuleName string) []byte {
+	return []byte(fmt.Sprintf("%s/%s", DexTransferChannelKeyPrefix, eightballModuleName))
+}
+
+func KeyDexConnection(eightballModuleName string) []byte {
+	return []byte(fmt.Sprintf("%s/%s", DexConnectionKeyPrefix, eightballModuleName))
+}
+
+func KeyTransferSeq(transferSeq uint64) []byte {
+	return []byte(fmt.Sprintf("%s/%v", TransferSeqKeyPrefix, transferSeq))
+}
+
+func KeyICASeq(icaSeq uint64) []byte {
+	return []byte(fmt.Sprintf("%s/%v", ICASeqKeyPrefix, icaSeq))
+}

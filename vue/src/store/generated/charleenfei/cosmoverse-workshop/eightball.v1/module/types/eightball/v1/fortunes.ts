@@ -9,6 +9,10 @@ export interface Fortune {
   fortune: string;
 }
 
+export interface FortuneList {
+  fortunes: Fortune[];
+}
+
 const baseFortune: object = { owner: "", price: "", fortune: "" };
 
 export const Fortune = {
@@ -93,6 +97,70 @@ export const Fortune = {
       message.fortune = object.fortune;
     } else {
       message.fortune = "";
+    }
+    return message;
+  },
+};
+
+const baseFortuneList: object = {};
+
+export const FortuneList = {
+  encode(message: FortuneList, writer: Writer = Writer.create()): Writer {
+    for (const v of message.fortunes) {
+      Fortune.encode(v!, writer.uint32(10).fork()).ldelim();
+    }
+    return writer;
+  },
+
+  decode(input: Reader | Uint8Array, length?: number): FortuneList {
+    const reader = input instanceof Uint8Array ? new Reader(input) : input;
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = { ...baseFortuneList } as FortuneList;
+    message.fortunes = [];
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.fortunes.push(Fortune.decode(reader, reader.uint32()));
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): FortuneList {
+    const message = { ...baseFortuneList } as FortuneList;
+    message.fortunes = [];
+    if (object.fortunes !== undefined && object.fortunes !== null) {
+      for (const e of object.fortunes) {
+        message.fortunes.push(Fortune.fromJSON(e));
+      }
+    }
+    return message;
+  },
+
+  toJSON(message: FortuneList): unknown {
+    const obj: any = {};
+    if (message.fortunes) {
+      obj.fortunes = message.fortunes.map((e) =>
+        e ? Fortune.toJSON(e) : undefined
+      );
+    } else {
+      obj.fortunes = [];
+    }
+    return obj;
+  },
+
+  fromPartial(object: DeepPartial<FortuneList>): FortuneList {
+    const message = { ...baseFortuneList } as FortuneList;
+    message.fortunes = [];
+    if (object.fortunes !== undefined && object.fortunes !== null) {
+      for (const e of object.fortunes) {
+        message.fortunes.push(Fortune.fromPartial(e));
+      }
     }
     return message;
   },

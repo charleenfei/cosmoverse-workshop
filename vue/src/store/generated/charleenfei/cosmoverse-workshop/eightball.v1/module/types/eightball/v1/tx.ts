@@ -5,7 +5,7 @@ import { Coin } from "../../cosmos/base/v1beta1/coin";
 export const protobufPackage = "eightball.v1";
 
 export interface MsgFeelingLucky {
-  creator: string;
+  sender: string;
   /** TODO: non-nullable gogoproto */
   offering: Coin | undefined;
 }
@@ -19,12 +19,12 @@ export interface MsgConnectToDex {
 
 export interface MsgConnectToDexResponse {}
 
-const baseMsgFeelingLucky: object = { creator: "" };
+const baseMsgFeelingLucky: object = { sender: "" };
 
 export const MsgFeelingLucky = {
   encode(message: MsgFeelingLucky, writer: Writer = Writer.create()): Writer {
-    if (message.creator !== "") {
-      writer.uint32(10).string(message.creator);
+    if (message.sender !== "") {
+      writer.uint32(10).string(message.sender);
     }
     if (message.offering !== undefined) {
       Coin.encode(message.offering, writer.uint32(18).fork()).ldelim();
@@ -40,7 +40,7 @@ export const MsgFeelingLucky = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          message.creator = reader.string();
+          message.sender = reader.string();
           break;
         case 2:
           message.offering = Coin.decode(reader, reader.uint32());
@@ -55,10 +55,10 @@ export const MsgFeelingLucky = {
 
   fromJSON(object: any): MsgFeelingLucky {
     const message = { ...baseMsgFeelingLucky } as MsgFeelingLucky;
-    if (object.creator !== undefined && object.creator !== null) {
-      message.creator = String(object.creator);
+    if (object.sender !== undefined && object.sender !== null) {
+      message.sender = String(object.sender);
     } else {
-      message.creator = "";
+      message.sender = "";
     }
     if (object.offering !== undefined && object.offering !== null) {
       message.offering = Coin.fromJSON(object.offering);
@@ -70,7 +70,7 @@ export const MsgFeelingLucky = {
 
   toJSON(message: MsgFeelingLucky): unknown {
     const obj: any = {};
-    message.creator !== undefined && (obj.creator = message.creator);
+    message.sender !== undefined && (obj.sender = message.sender);
     message.offering !== undefined &&
       (obj.offering = message.offering
         ? Coin.toJSON(message.offering)
@@ -80,10 +80,10 @@ export const MsgFeelingLucky = {
 
   fromPartial(object: DeepPartial<MsgFeelingLucky>): MsgFeelingLucky {
     const message = { ...baseMsgFeelingLucky } as MsgFeelingLucky;
-    if (object.creator !== undefined && object.creator !== null) {
-      message.creator = object.creator;
+    if (object.sender !== undefined && object.sender !== null) {
+      message.sender = object.sender;
     } else {
-      message.creator = "";
+      message.sender = "";
     }
     if (object.offering !== undefined && object.offering !== null) {
       message.offering = Coin.fromPartial(object.offering);
