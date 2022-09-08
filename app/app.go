@@ -103,7 +103,12 @@ import (
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/keeper"
 	icacontrollertypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/types"
 	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
+
 	// this line is used by starport scaffolding # stargate/app/moduleImport
+
+	intertx "github.com/cosmos/interchain-accounts/x/inter-tx"
+	intertxkeeper "github.com/cosmos/interchain-accounts/x/inter-tx/keeper"
+	intertxtypes "github.com/cosmos/interchain-accounts/x/inter-tx/types"
 )
 
 const (
@@ -157,6 +162,8 @@ var (
 		transfer.AppModuleBasic{},
 		vesting.AppModuleBasic{},
 		eightballmodule.AppModuleBasic{},
+		ica.AppModuleBasic{},
+		intertx.AppModuleBasic{},
 		// this line is used by starport scaffolding # stargate/app/moduleBasic
 	)
 
@@ -232,9 +239,11 @@ type App struct {
 	ScopedIBCKeeper           capabilitykeeper.ScopedKeeper
 	ScopedTransferKeeper      capabilitykeeper.ScopedKeeper
 	ScopedICAControllerKeeper capabilitykeeper.ScopedKeeper
-	ScopedEightballKeeper     capabilitykeeper.ScopedKeeper
+	ScopedInterTxKeeper       capabilitykeeper.ScopedKeeper
 
 	EightballKeeper eightballmodulekeeper.Keeper
+
+	InterTxKeeper intertxkeeper.Keeper
 	// create IBC middleware (line 23 ibc_middleware.go)
 	ICAControllerKeeper icacontrollerkeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
@@ -273,7 +282,7 @@ func New(
 		minttypes.StoreKey, distrtypes.StoreKey, slashingtypes.StoreKey,
 		govtypes.StoreKey, paramstypes.StoreKey, ibchost.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey,
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
-		eightballmoduletypes.StoreKey, icacontrollertypes.StoreKey,
+		eightballmoduletypes.StoreKey, icacontrollertypes.StoreKey, intertxtypes.StoreKey,
 		// this line is used by starport scaffolding # stargate/app/storeKey
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -301,8 +310,8 @@ func New(
 	// grant capabilities for the ibc and ibc-transfer modules
 	scopedIBCKeeper := app.CapabilityKeeper.ScopeToModule(ibchost.ModuleName)
 	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
+	scopedInterTxKeeper := app.CapabilityKeeper.ScopeToModule(intertxtypes.ModuleName)
 	scopedICAControllerKeeper := app.CapabilityKeeper.ScopeToModule(icacontrollertypes.SubModuleName)
-	scopedEightballKeeper := app.CapabilityKeeper.ScopeToModule(eightballmoduletypes.ModuleName)
 
 	// seal capability keeper after scoping modules
 	app.CapabilityKeeper.Seal()
@@ -376,7 +385,7 @@ func New(
 
 		app.IBCKeeper,
 		&app.TransferKeeper,
-		app.ScopedEightballKeeper,
+		scopedInterTxKeeper,
 		&app.ICAControllerKeeper,
 		app.MsgServiceRouter(),
 	)
@@ -397,6 +406,10 @@ func New(
 		scopedICAControllerKeeper, app.MsgServiceRouter(),
 	)
 
+	app.InterTxKeeper = intertxkeeper.NewKeeper(appCodec, keys[intertxtypes.StoreKey], app.ICAControllerKeeper, scopedInterTxKeeper)
+	interTxModule := intertx.NewAppModule(appCodec, app.InterTxKeeper)
+	interTxIBCModule := intertx.NewIBCModule(app.InterTxKeeper)
+
 	var (
 		transferModule    = transfer.NewAppModule(app.TransferKeeper)
 		transferIBCModule = eightballmodule.NewIBCMiddleware(transfer.NewIBCModule(app.TransferKeeper), app.EightballKeeper)
@@ -404,7 +417,7 @@ func New(
 		// TODO: replace nil (host module)?
 		icaModule = ica.NewAppModule(&app.ICAControllerKeeper, nil)
 		// TODO: replace nil (auth module) in ibc-go v6
-		icaControllerIBCModule = eightballmodule.NewIBCMiddleware(icacontroller.NewIBCModule(app.ICAControllerKeeper, nil), app.EightballKeeper)
+		icaControllerIBCModule = eightballmodule.NewIBCMiddleware(icacontroller.NewIBCModule(app.ICAControllerKeeper, interTxIBCModule), app.EightballKeeper)
 	)
 
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
@@ -461,6 +474,7 @@ func New(
 		transferModule,
 		icaModule,
 		eightballModule,
+		interTxModule,
 		// this line is used by starport scaffolding # stargate/app/appModule
 	)
 
@@ -489,6 +503,7 @@ func New(
 		paramstypes.ModuleName,
 		icatypes.ModuleName,
 		eightballmoduletypes.ModuleName,
+		intertxtypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/beginBlockers
 	)
 
@@ -513,6 +528,7 @@ func New(
 		ibctransfertypes.ModuleName,
 		icatypes.ModuleName,
 		eightballmoduletypes.ModuleName,
+		intertxtypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/endBlockers
 	)
 
@@ -542,6 +558,7 @@ func New(
 		feegrant.ModuleName,
 		icatypes.ModuleName,
 		eightballmoduletypes.ModuleName,
+		intertxtypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis
 	)
 
@@ -603,8 +620,8 @@ func New(
 
 	app.ScopedIBCKeeper = scopedIBCKeeper
 	app.ScopedTransferKeeper = scopedTransferKeeper
-	app.ScopedEightballKeeper = scopedEightballKeeper
 	app.ScopedICAControllerKeeper = scopedICAControllerKeeper
+	app.ScopedInterTxKeeper = scopedInterTxKeeper
 
 	// this line is used by starport scaffolding # stargate/app/beforeInitReturn
 
