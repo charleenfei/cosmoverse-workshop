@@ -25,6 +25,14 @@ const (
 
 	// PortID is the default port id that module binds to
 	PortID = "eightball"
+
+	DexTransferChannelKeyPrefix = "dexTransferChannel"
+	DexConnectionKeyPrefix      = "dexConnection"
+
+	TransferSeqKeyPrefix     = "transferSeq"
+	TransferRecvSeqKeyPrefix = "transferRecvSeq"
+
+	ICASeqKeyPrefix = "icaSeq"
 )
 
 func KeyPrefix(p string) []byte {
@@ -34,12 +42,6 @@ func KeyPrefix(p string) []byte {
 var (
 	// PortKey defines the key to store the port ID in store
 	PortKey = KeyPrefix("eightball-port-")
-
-	DexTransferChannelKeyPrefix = "dexTransferChannel"
-	DexConnectionKeyPrefix      = "dexConnection"
-
-	TransferSeqKeyPrefix = "transferSeq"
-	ICASeqKeyPrefix      = "icaSeq"
 )
 
 func KeyDexTransferChannel(eightballModuleName string) []byte {
@@ -56,4 +58,8 @@ func KeyTransferSeq(transferSeq uint64) []byte {
 
 func KeyICASeq(icaSeq uint64) []byte {
 	return []byte(fmt.Sprintf("%s/%v", ICASeqKeyPrefix, icaSeq))
+}
+
+func KeyTransferRecvSeq(transferRecvSeq uint64) []byte {
+	return []byte(fmt.Sprintf("%s/%v", TransferRecvSeqKeyPrefix, transferRecvSeq))
 }

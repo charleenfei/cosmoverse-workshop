@@ -74,10 +74,8 @@ func (im IBCMiddleware) OnChanOpenAck(
 	switch portID {
 	case transfertypes.PortID:
 		im.keeper.OnTransferChannelOpen(ctx, channelID)
-	case icatypes.PortID:
-		im.keeper.OnICAChannelOpen(ctx, channelID)
 	default:
-		return errors.New("invalid port")
+		im.keeper.OnICAChannelOpen(ctx, channelID)
 	}
 	// call underlying callback
 	return im.app.OnChanOpenAck(ctx, portID, channelID, counterpartyChannelID, counterpartyVersion)
@@ -128,7 +126,20 @@ func (im IBCMiddleware) OnRecvPacket(
 	relayer sdk.AccAddress,
 ) ibcexported.Acknowledgement {
 	// call underlying callback
-	return im.app.OnRecvPacket(ctx, packet, relayer)
+	ack := im.app.OnRecvPacket(ctx, packet, relayer)
+	if ack.Success() {
+		offerer, found := im.keeper.GetTransferRecvSequenceToOfferer(ctx, packet.Sequence)
+		if !found {
+			panic("hello")
+		}
+		// TODO: check amount and denom, mint fortune to sender, return refund to sender
+		var transferData transfertypes.FungibleTokenPacketData
+		if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &transferData); err == nil {
+
+		}
+
+	}
+	return ack
 }
 
 // OnAcknowledgementPacket implements the IBCModule interface
@@ -147,9 +158,15 @@ func (im IBCMiddleware) OnAcknowledgementPacket(
 	var transferData transfertypes.FungibleTokenPacketData
 	var icaData icatypes.InterchainAccountPacketData
 	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &transferData); err == nil {
-		im.keeper.OnTransferAck(ctx, transferData, packet.Sequence, ack.Success())
+		err = im.keeper.OnTransferAck(ctx, transferData, packet.Sequence, ack.Success())
+		if err != nil {
+			return sdkerrors.Wrap(err, "failed eightball transfer ack callback")
+		}
 	} else if err := icatypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &icaData); err == nil {
-		im.keeper.OnICAAck(ctx, icaData, packet.Sequence, ack.Success())
+		err = im.keeper.OnICAAck(ctx, icaData, packet.Sequence, ack)
+		if err != nil {
+			return sdkerrors.Wrap(err, "failed eightball ica ack callback")
+		}
 	} else {
 		return errors.New("packet data invalid")
 	}

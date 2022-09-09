@@ -146,3 +146,18 @@ func (k Keeper) GetICASeqToOfferer(ctx sdk.Context, icaSeq uint64) (sdk.AccAddre
 
 	return store.Get(key), true
 }
+
+func (k Keeper) SetTransferRecvSeqToOfferer(ctx sdk.Context, transferRecvSeq uint64, offerer sdk.AccAddress) {
+	store := ctx.KVStore(k.storeKey)
+	store.Set(types.KeyTransferRecvSeq(transferRecvSeq), offerer)
+}
+
+func (k Keeper) GetTransferRecvSeqToOfferer(ctx sdk.Context, transferRecvSeq uint64) (sdk.AccAddress, bool) {
+	store := ctx.KVStore(k.storeKey)
+	key := types.KeyTransferRecvSeq(transferRecvSeq)
+	if !store.Has(key) {
+		return nil, false
+	}
+
+	return store.Get(key), true
+}

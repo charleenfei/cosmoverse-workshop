@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/charleenfei/cosmoverse-workshop/x/eightball/types"
@@ -8,6 +10,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
 
 	simpledextypes "github.com/charleenfei/simple-dex/simple-dex/x/simpledex/types"
 	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
@@ -47,7 +50,6 @@ func (k Keeper) OnTransferAck(ctx sdk.Context, transferData transfertypes.Fungib
 		if !found {
 			sdkerrors.Wrap(channeltypes.ErrChannelCapabilityNotFound, "module does not own channel capability")
 		}
-
 		// get eightball module aaccount address to set as receiver of the transfer of exchanged tokens back from simple-dex
 		eightballAddr := k.accountKeeper.GetModuleAddress(types.ModuleName)
 
@@ -67,12 +69,21 @@ func (k Keeper) OnTransferAck(ctx sdk.Context, transferData transfertypes.Fungib
 			return sdkerrors.Wrapf(transfertypes.ErrInvalidAmount, "unable to parse transfer amount (%s) into math.Int", transferData.Amount)
 		}
 
+		// construct the denom that would have been created by counterparty
+		// by creating trace and then hashing
+		// the trace is created with destination port and channel identifiers
+		trace := transfertypes.DenomTrace{
+			Path:      fmt.Sprintf("%s/%s", transfertypes.PortID, channel.Counterparty.ChannelId),
+			BaseDenom: transferData.Denom,
+		}
+		counterpartyDenom := trace.IBCDenom()
+
 		// create the MsgSwap to be submitted by the ica controller account on simple-dex
 		// set transfer port and dex channel id to tell simple-dex where to send back funds after they have been exchanged
 		msgSwap := &simpledextypes.MsgSwap{
 			Sender: eightballICAAddr,
 			Offer: sdk.Coin{
-				Denom:  transferData.Denom,
+				Denom:  counterpartyDenom,
 				Amount: transferAmount,
 			},
 			MinAsk: sdk.Coin{
@@ -95,11 +106,11 @@ func (k Keeper) OnTransferAck(ctx sdk.Context, transferData transfertypes.Fungib
 		}
 
 		// grab the next sequence in the channel which will be the sequence number of this ica packet
-		sequence, found := k.ibcKeeper.ChannelKeeper.GetNextSequenceSend(ctx, icaPortID, dexChannelId)
+		sequence, found := k.ibcKeeper.ChannelKeeper.GetNextSequenceSend(ctx, icaPortID, icaChannelID)
 		if !found {
 			return sdkerrors.Wrapf(
 				channeltypes.ErrSequenceSendNotFound,
-				"source port: %s, source channel: %s", icaPortID, dexChannelId,
+				"source port: %s, source channel: %s", icaPortID, icaChannelID,
 			)
 		}
 
@@ -113,7 +124,7 @@ func (k Keeper) OnTransferAck(ctx sdk.Context, transferData transfertypes.Fungib
 		k.SetICASeqToOfferer(ctx, sequence, sender)
 
 		// timeoutTimestamp set to max value with the unsigned bit shifted to sastisfy hermes timestamp conversion
-		timeoutTimestamp := ctx.BlockTime().Add(time.Minute).UnixNano()
+		timeoutTimestamp := ctx.BlockTime().Add(time.Hour).UnixNano()
 
 		// send the packet data containing the MsgSwap to be executed on simple-dex chain
 		_, err = k.icacontrollerKeeper.SendTx(ctx, chanCap, dexConnectionID, icaPortID, packetData, uint64(timeoutTimestamp))
@@ -126,12 +137,34 @@ func (k Keeper) OnTransferAck(ctx sdk.Context, transferData transfertypes.Fungib
 	return nil
 }
 
-func (k Keeper) OnICAAck(ctx sdk.Context, icaData icatypes.InterchainAccountPacketData, packetSequence uint64, ackSuccess bool) error {
-	if ackSuccess {
+func (k Keeper) OnICAAck(ctx sdk.Context, icaData icatypes.InterchainAccountPacketData, packetSequence uint64, ack channeltypes.Acknowledgement) error {
+	if ack.Success() {
 		// TODO: need some way to get receiver of transfer addr (owner of fortune) from simple dex & price that the owner paid
-		k.MintFortune(ctx, icaData, packetSequence)
+		// k.MintFortune(ctx, icaData, packetSequence)
 
 		// TODO: handle extra token overflow that are sent from simple-dex
+		txMsgData := sdk.TxMsgData{}
+		if err := proto.Unmarshal(ack.GetResult(), &txMsgData); err != nil {
+			return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-27 tx message data: %v", err)
+		}
+
+		switch len(txMsgData.Data) {
+		case 1:
+			var swapResponse simpledextypes.MsgSwapResponse
+			if err := proto.Unmarshal(txMsgData.Data[0], &swapResponse); err != nil {
+				return err
+			}
+
+			offerer, found := k.GetICASeqToOfferer(ctx, packetSequence)
+			if !found {
+				return errors.New("ica seq not found")
+			}
+
+			k.SetTransferRecvSeqToOfferer(ctx, swapResponse.Sequence, offerer.String())
+
+		default:
+			return errors.New("unexpected number of messages")
+		}
 	}
 
 	// TODO: if ICA fails, send another ICA message that transfers the amount back to sender
