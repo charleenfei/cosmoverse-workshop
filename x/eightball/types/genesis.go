@@ -24,27 +24,27 @@ func DefaultGenesis() *GenesisState {
 			},
 			{
 				Owner:   "",
-				Price:   "",
+				Price:   "100token",
 				Fortune: "Enjoy the small things you find on your path.",
 			},
 			{
 				Owner:   "",
-				Price:   "",
+				Price:   "100token",
 				Fortune: "You have a heart of gold.",
 			},
 			{
 				Owner:   "",
-				Price:   "",
+				Price:   "100token",
 				Fortune: "Some people never have anything except ideas, Go do it.",
 			},
 			{
 				Owner:   "",
-				Price:   "",
+				Price:   "100token",
 				Fortune: "Pure logic is the ruin of the spirit.",
 			},
 			{
 				Owner:   "",
-				Price:   "",
+				Price:   "100token",
 				Fortune: "When the moment comes, take the one from the right.",
 			},
 		},
