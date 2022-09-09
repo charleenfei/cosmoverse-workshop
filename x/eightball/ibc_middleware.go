@@ -128,14 +128,14 @@ func (im IBCMiddleware) OnRecvPacket(
 	// call underlying callback
 	ack := im.app.OnRecvPacket(ctx, packet, relayer)
 	if ack.Success() {
-		offerer, found := im.keeper.GetTransferRecvSequenceToOfferer(ctx, packet.Sequence)
+		offerer, found := im.keeper.GetTransferRecvSeqToOfferer(ctx, packet.Sequence)
 		if !found {
 			panic("hello")
 		}
 		// TODO: check amount and denom, mint fortune to sender, return refund to sender
 		var transferData transfertypes.FungibleTokenPacketData
 		if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &transferData); err == nil {
-
+			im.keeper.MintFortune(ctx, transferData, offerer)
 		}
 
 	}

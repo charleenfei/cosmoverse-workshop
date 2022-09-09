@@ -3,7 +3,7 @@ module github.com/charleenfei/cosmoverse-workshop
 go 1.18
 
 require (
-	github.com/charleenfei/simple-dex/simple-dex v0.0.0-20220906153721-3a7393cbdc4a
+	github.com/charleenfei/simple-dex/simple-dex v0.0.0-20220909160129-06e4dbb31427
 	github.com/cosmos/cosmos-sdk v0.45.7
 	github.com/cosmos/ibc-go/v3 v3.2.0
 	github.com/cosmos/interchain-accounts v0.1.4

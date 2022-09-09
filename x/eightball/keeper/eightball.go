@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"time"
 
+	proto "github.com/gogo/protobuf/proto"
+
 	"github.com/charleenfei/cosmoverse-workshop/x/eightball/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/proto"
 
 	simpledextypes "github.com/charleenfei/simple-dex/simple-dex/x/simpledex/types"
 	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
@@ -143,15 +144,15 @@ func (k Keeper) OnICAAck(ctx sdk.Context, icaData icatypes.InterchainAccountPack
 		// k.MintFortune(ctx, icaData, packetSequence)
 
 		// TODO: handle extra token overflow that are sent from simple-dex
-		txMsgData := sdk.TxMsgData{}
-		if err := proto.Unmarshal(ack.GetResult(), &txMsgData); err != nil {
+		txMsgData := &sdk.TxMsgData{}
+		if err := proto.Unmarshal(ack.GetResult(), txMsgData); err != nil {
 			return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-27 tx message data: %v", err)
 		}
 
 		switch len(txMsgData.Data) {
 		case 1:
 			var swapResponse simpledextypes.MsgSwapResponse
-			if err := proto.Unmarshal(txMsgData.Data[0], &swapResponse); err != nil {
+			if err := proto.Unmarshal(txMsgData.Data[0].Data, &swapResponse); err != nil {
 				return err
 			}
 
@@ -160,7 +161,7 @@ func (k Keeper) OnICAAck(ctx sdk.Context, icaData icatypes.InterchainAccountPack
 				return errors.New("ica seq not found")
 			}
 
-			k.SetTransferRecvSeqToOfferer(ctx, swapResponse.Sequence, offerer.String())
+			k.SetTransferRecvSeqToOfferer(ctx, swapResponse.Sequence, offerer)
 
 		default:
 			return errors.New("unexpected number of messages")

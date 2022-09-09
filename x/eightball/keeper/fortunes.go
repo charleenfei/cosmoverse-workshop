@@ -1,12 +1,13 @@
 package keeper
 
 import (
+	"errors"
+
 	"github.com/charleenfei/cosmoverse-workshop/x/eightball/types"
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
-	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
+	transfertypes "github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
 )
 
 // SetFortune set a specific fortune in the store from its index
@@ -89,7 +90,7 @@ func (k Keeper) GetAllOwnedFortunes(ctx sdk.Context) (list []types.Fortune) {
 	return
 }
 
-func (k Keeper) MintFortune(ctx sdk.Context, data icatypes.InterchainAccountPacketData, icaPacketSequence uint64) (types.Fortune, error) {
+func (k Keeper) MintFortune(ctx sdk.Context, data transfertypes.FungibleTokenPacketData, offerer sdk.AccAddress) (types.Fortune, error) {
 	fortuneList, _ := k.GetUnownedFortunes(ctx)
 	var availableFortunes []types.Fortune
 
@@ -103,13 +104,22 @@ func (k Keeper) MintFortune(ctx sdk.Context, data icatypes.InterchainAccountPack
 	randInt := int(ctx.BlockTime().UnixNano()) % len(availableFortunes)
 	selectedFortune := availableFortunes[randInt]
 
-	initialOfferer, found := k.GetICASeqToOfferer(ctx, icaPacketSequence)
-	if !found {
-		return types.Fortune{}, types.ErrOffererNotFound
+	// check to see if the amount that has been transferred is enough to mint a fortune, if not, error
+	fortunePrice, err := sdk.ParseCoinNormalized(selectedFortune.Price)
+	if err != nil {
+		return types.Fortune{}, err
 	}
 
-	selectedFortune.Owner = initialOfferer.String()
+	transferAmount, _ := sdk.NewIntFromString(data.Amount)
+	transferCoin := sdk.NewCoin(data.Denom, transferAmount)
+	if transferCoin.IsLT(fortunePrice) {
+		return types.Fortune{}, errors.New("not enough money offered, try again")
+	}
+
+	selectedFortune.Owner = offerer.String()
 	k.SetFortune(ctx, selectedFortune)
+
+	// TODO: refund the rest of the tokens
 
 	return selectedFortune, nil
 }
