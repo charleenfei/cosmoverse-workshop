@@ -16,16 +16,9 @@ func CmdListFortunes() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
 
-			pageReq, err := client.ReadPageRequest(cmd.Flags())
-			if err != nil {
-				return err
-			}
-
 			queryClient := types.NewQueryClient(clientCtx)
 
-			params := &types.QueryFortunesRequest{
-				Pagination: pageReq,
-			}
+			params := &types.QueryFortunesRequest{}
 
 			res, err := queryClient.Fortunes(context.Background(), params)
 			if err != nil {
@@ -36,7 +29,6 @@ func CmdListFortunes() *cobra.Command {
 		},
 	}
 
-	flags.AddPaginationFlagsToCmd(cmd, cmd.Use)
 	flags.AddQueryFlagsToCmd(cmd)
 
 	return cmd

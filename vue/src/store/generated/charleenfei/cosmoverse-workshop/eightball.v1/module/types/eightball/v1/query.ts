@@ -2,10 +2,6 @@
 import { Reader, Writer } from "protobufjs/minimal";
 import { Params } from "../../eightball/v1/params";
 import { Fortune } from "../../eightball/v1/fortunes";
-import {
-  PageRequest,
-  PageResponse,
-} from "../../cosmos/base/query/v1beta1/pagination";
 
 export const protobufPackage = "eightball.v1";
 
@@ -26,13 +22,10 @@ export interface QueryFortuneResponse {
   fortune: Fortune | undefined;
 }
 
-export interface QueryFortunesRequest {
-  pagination: PageRequest | undefined;
-}
+export interface QueryFortunesRequest {}
 
 export interface QueryFortunesResponse {
   fortunes: Fortune[];
-  pagination: PageResponse | undefined;
 }
 
 const baseQueryParamsRequest: object = {};
@@ -254,13 +247,7 @@ export const QueryFortuneResponse = {
 const baseQueryFortunesRequest: object = {};
 
 export const QueryFortunesRequest = {
-  encode(
-    message: QueryFortunesRequest,
-    writer: Writer = Writer.create()
-  ): Writer {
-    if (message.pagination !== undefined) {
-      PageRequest.encode(message.pagination, writer.uint32(10).fork()).ldelim();
-    }
+  encode(_: QueryFortunesRequest, writer: Writer = Writer.create()): Writer {
     return writer;
   },
 
@@ -271,9 +258,6 @@ export const QueryFortunesRequest = {
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
-        case 1:
-          message.pagination = PageRequest.decode(reader, reader.uint32());
-          break;
         default:
           reader.skipType(tag & 7);
           break;
@@ -282,32 +266,18 @@ export const QueryFortunesRequest = {
     return message;
   },
 
-  fromJSON(object: any): QueryFortunesRequest {
+  fromJSON(_: any): QueryFortunesRequest {
     const message = { ...baseQueryFortunesRequest } as QueryFortunesRequest;
-    if (object.pagination !== undefined && object.pagination !== null) {
-      message.pagination = PageRequest.fromJSON(object.pagination);
-    } else {
-      message.pagination = undefined;
-    }
     return message;
   },
 
-  toJSON(message: QueryFortunesRequest): unknown {
+  toJSON(_: QueryFortunesRequest): unknown {
     const obj: any = {};
-    message.pagination !== undefined &&
-      (obj.pagination = message.pagination
-        ? PageRequest.toJSON(message.pagination)
-        : undefined);
     return obj;
   },
 
-  fromPartial(object: DeepPartial<QueryFortunesRequest>): QueryFortunesRequest {
+  fromPartial(_: DeepPartial<QueryFortunesRequest>): QueryFortunesRequest {
     const message = { ...baseQueryFortunesRequest } as QueryFortunesRequest;
-    if (object.pagination !== undefined && object.pagination !== null) {
-      message.pagination = PageRequest.fromPartial(object.pagination);
-    } else {
-      message.pagination = undefined;
-    }
     return message;
   },
 };
@@ -322,12 +292,6 @@ export const QueryFortunesResponse = {
     for (const v of message.fortunes) {
       Fortune.encode(v!, writer.uint32(10).fork()).ldelim();
     }
-    if (message.pagination !== undefined) {
-      PageResponse.encode(
-        message.pagination,
-        writer.uint32(18).fork()
-      ).ldelim();
-    }
     return writer;
   },
 
@@ -341,9 +305,6 @@ export const QueryFortunesResponse = {
       switch (tag >>> 3) {
         case 1:
           message.fortunes.push(Fortune.decode(reader, reader.uint32()));
-          break;
-        case 2:
-          message.pagination = PageResponse.decode(reader, reader.uint32());
           break;
         default:
           reader.skipType(tag & 7);
@@ -361,11 +322,6 @@ export const QueryFortunesResponse = {
         message.fortunes.push(Fortune.fromJSON(e));
       }
     }
-    if (object.pagination !== undefined && object.pagination !== null) {
-      message.pagination = PageResponse.fromJSON(object.pagination);
-    } else {
-      message.pagination = undefined;
-    }
     return message;
   },
 
@@ -378,10 +334,6 @@ export const QueryFortunesResponse = {
     } else {
       obj.fortunes = [];
     }
-    message.pagination !== undefined &&
-      (obj.pagination = message.pagination
-        ? PageResponse.toJSON(message.pagination)
-        : undefined);
     return obj;
   },
 
@@ -394,11 +346,6 @@ export const QueryFortunesResponse = {
       for (const e of object.fortunes) {
         message.fortunes.push(Fortune.fromPartial(e));
       }
-    }
-    if (object.pagination !== undefined && object.pagination !== null) {
-      message.pagination = PageResponse.fromPartial(object.pagination);
-    } else {
-      message.pagination = undefined;
     }
     return message;
   },

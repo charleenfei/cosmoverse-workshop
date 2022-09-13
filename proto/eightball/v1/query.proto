@@ -44,12 +44,10 @@ message QueryFortuneResponse {
 }
 
 message QueryFortunesRequest {
-	cosmos.base.query.v1beta1.PageRequest pagination = 1;
 }
 
 message QueryFortunesResponse {
 	repeated Fortune fortunes = 1 [(gogoproto.nullable) = false];
-	cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
 // this line is used by starport scaffolding # 3

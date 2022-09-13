@@ -159,13 +159,9 @@ export default {
 			try {
 				const key = params ?? {};
 				const queryClient=await initQueryClient(rootGetters)
-				let value= (await queryClient.queryFortunes(query)).data
+				let value= (await queryClient.queryFortunes()).data
 				
 					
-				while (all && (<any> value).pagination && (<any> value).pagination.next_key!=null) {
-					let next_values=(await queryClient.queryFortunes({...query, 'pagination.key':(<any> value).pagination.next_key})).data
-					value = mergeResults(value, next_values);
-				}
 				commit('QUERY', { query: 'Fortunes', key: { params: {...key}, query}, value })
 				if (subscribe) commit('SUBSCRIBE', { action: 'QueryFortunes', payload: { options: { all }, params: {...key},query }})
 				return getters['getFortunes']( { params: {...key}, query}) ?? {}

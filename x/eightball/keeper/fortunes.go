@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/charleenfei/cosmoverse-workshop/x/eightball/types"
 
@@ -100,6 +101,11 @@ func (k Keeper) MintFortune(ctx sdk.Context, data transfertypes.FungibleTokenPac
 		}
 	}
 
+	// TODO: refund all tokens to original sender instead of erroring here
+	if len(availableFortunes) == 0 {
+		return types.Fortune{}, errors.New(fmt.Sprintf("available fortunes list is empty. original FortuneList: %#v", fortuneList))
+	}
+
 	// use block time here to generate random index to enforce determinism
 	randInt := int(ctx.BlockTime().UnixNano()) % len(availableFortunes)
 	selectedFortune := availableFortunes[randInt]
@@ -119,7 +125,7 @@ func (k Keeper) MintFortune(ctx sdk.Context, data transfertypes.FungibleTokenPac
 	selectedFortune.Owner = offerer.String()
 	k.SetFortune(ctx, selectedFortune)
 
-	// TODO: refund the rest of the tokens
+	// TODO: refund the rest of the tokens to original sender
 
 	return selectedFortune, nil
 }

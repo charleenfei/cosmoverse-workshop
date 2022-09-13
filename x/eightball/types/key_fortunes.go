@@ -6,7 +6,7 @@ var _ binary.ByteOrder
 
 const (
 	// FortuneKeyPrefix is the prefix to retrieve Fortunes
-	FortuneKeyPrefix = "Fortune/value/"
+	FortuneKeyPrefix        = "Fortune/value/"
 	UnownedFortuneKeyString = "UnownedFortunes"
 )
 
@@ -14,16 +14,14 @@ const (
 func FortuneKey(
 	owner string,
 ) []byte {
-	var key []byte
+	key := []byte("ownedFortune/")
 
 	ownerBytes := []byte(owner)
 	key = append(key, ownerBytes...)
-	key = append(key, []byte("/")...)
 
 	return key
 }
 
-func UnownedFortuneKey(
-) []byte {
+func UnownedFortuneKey() []byte {
 	return []byte(UnownedFortuneKeyString)
 }
