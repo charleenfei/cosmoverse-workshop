@@ -94,6 +94,7 @@ func (k Keeper) GetAllOwnedFortunes(ctx sdk.Context) (list []types.Fortune) {
 func (k Keeper) MintFortune(ctx sdk.Context, data transfertypes.FungibleTokenPacketData, offerer sdk.AccAddress) (types.Fortune, error) {
 	fortuneList, _ := k.GetUnownedFortunes(ctx)
 	var availableFortunes []types.Fortune
+	var err error
 
 	for _, fortune := range fortuneList.Fortunes {
 		if fortune.Owner == "" {
@@ -101,9 +102,15 @@ func (k Keeper) MintFortune(ctx sdk.Context, data transfertypes.FungibleTokenPac
 		}
 	}
 
-	// TODO: refund all tokens to original sender instead of erroring here
+	transferAmount, _ := sdk.NewIntFromString(data.Amount)
+	transferCoin := sdk.NewCoin(data.Denom, transferAmount)
+
+	// if there are no available fortunes, refund the tokens back to the original offerer
 	if len(availableFortunes) == 0 {
-		return types.Fortune{}, errors.New(fmt.Sprintf("available fortunes list is empty. original FortuneList: %#v", fortuneList))
+		if err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, offerer, sdk.NewCoins(transferCoin)); err != nil {
+			return types.Fortune{}, err
+		}
+		return types.Fortune{}, fmt.Errorf("available fortunes list is empty. original FortuneList: %#v", fortuneList)
 	}
 
 	// use block time here to generate random index to enforce determinism
@@ -116,8 +123,6 @@ func (k Keeper) MintFortune(ctx sdk.Context, data transfertypes.FungibleTokenPac
 		return types.Fortune{}, err
 	}
 
-	transferAmount, _ := sdk.NewIntFromString(data.Amount)
-	transferCoin := sdk.NewCoin(data.Denom, transferAmount)
 	if transferCoin.IsLT(fortunePrice) {
 		return types.Fortune{}, errors.New("not enough money offered, try again")
 	}
@@ -125,7 +130,9 @@ func (k Keeper) MintFortune(ctx sdk.Context, data transfertypes.FungibleTokenPac
 	selectedFortune.Owner = offerer.String()
 	k.SetFortune(ctx, selectedFortune)
 
-	// TODO: refund the rest of the tokens to original sender
+	// refund the rest of the tokens to original sender
+	leftoverCoin := transferCoin.SubAmount(fortunePrice.Amount)
+	k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, offerer, sdk.NewCoins(leftoverCoin))
 
 	return selectedFortune, nil
 }

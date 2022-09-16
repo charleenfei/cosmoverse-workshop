@@ -21,6 +21,9 @@ import (
 )
 
 func (k Keeper) OnTransferAck(ctx sdk.Context, transferData transfertypes.FungibleTokenPacketData, packetSequence uint64, ackSuccess bool) error {
+	var offerer sdk.AccAddress
+	var offer sdk.Coin
+
 	if ackSuccess {
 
 		// get simple-dex chain connection ID & port ID to get the ICA account addr below
@@ -34,7 +37,6 @@ func (k Keeper) OnTransferAck(ctx sdk.Context, transferData transfertypes.Fungib
 			return types.ErrDexConnectionNotFound
 		}
 
-		// TODO: store ICA addr to grab
 		eightballICAAddr, found := k.icacontrollerKeeper.GetInterchainAccountAddress(ctx, dexConnectionID, icaPortID)
 		if !found {
 			return status.Errorf(codes.NotFound, "no account found for portID %s", icaPortID)
@@ -78,15 +80,16 @@ func (k Keeper) OnTransferAck(ctx sdk.Context, transferData transfertypes.Fungib
 			BaseDenom: transferData.Denom,
 		}
 		counterpartyDenom := trace.IBCDenom()
+		offer = sdk.Coin{
+			Denom:  counterpartyDenom,
+			Amount: transferAmount,
+		}
 
 		// create the MsgSwap to be submitted by the ica controller account on simple-dex
 		// set transfer port and dex channel id to tell simple-dex where to send back funds after they have been exchanged
 		msgSwap := &simpledextypes.MsgSwap{
 			Sender: eightballICAAddr,
-			Offer: sdk.Coin{
-				Denom:  counterpartyDenom,
-				Amount: transferAmount,
-			},
+			Offer:  offer,
 			MinAsk: sdk.Coin{
 				Denom:  "token",
 				Amount: sdk.NewInt(100),
@@ -116,13 +119,13 @@ func (k Keeper) OnTransferAck(ctx sdk.Context, transferData transfertypes.Fungib
 		}
 
 		// use the transfer sequence passed into this function to grab the sender of the FeelingLucky msg
-		sender, found := k.GetTransferSeqToOfferer(ctx, packetSequence)
+		offerer, found := k.GetTransferSeqToOfferer(ctx, packetSequence)
 		if !found {
 			return types.ErrOffererNotFound
 		}
 
 		//  save k/v pair which associates the sender of the FeelingLucky msg w the sequence number of this ica packet
-		k.SetICASeqToOfferer(ctx, sequence, sender)
+		k.SetICASeqToOfferer(ctx, sequence, offerer)
 
 		// timeoutTimestamp set to max value with the unsigned bit shifted to sastisfy hermes timestamp conversion
 		timeoutTimestamp := ctx.BlockTime().Add(time.Hour).UnixNano()
@@ -132,18 +135,17 @@ func (k Keeper) OnTransferAck(ctx sdk.Context, transferData transfertypes.Fungib
 		if err != nil {
 			return err
 		}
+		return nil
 	}
-
-	// TODO: bank send from module account back to sender transfer amt
+	// refund the offer to the offerer if the transfer has failed
+	if err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, offerer, sdk.NewCoins(offer)); err != nil {
+		return errors.New("initial offer transfer to dex failed")
+	}
 	return nil
 }
 
 func (k Keeper) OnICAAck(ctx sdk.Context, icaData icatypes.InterchainAccountPacketData, packetSequence uint64, ack channeltypes.Acknowledgement) error {
 	if ack.Success() {
-		// TODO: need some way to get receiver of transfer addr (owner of fortune) from simple dex & price that the owner paid
-		// k.MintFortune(ctx, icaData, packetSequence)
-
-		// TODO: handle extra token overflow that are sent from simple-dex
 		txMsgData := &sdk.TxMsgData{}
 		if err := proto.Unmarshal(ack.GetResult(), txMsgData); err != nil {
 			return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-27 tx message data: %v", err)

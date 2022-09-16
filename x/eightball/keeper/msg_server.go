@@ -129,26 +129,8 @@ func (k msgServer) ConnectToDex(goCtx context.Context, msg *types.MsgConnectToDe
 
 	res, err := k.ibcKeeper.ChannelOpenInit(goCtx, channOpenMsg)
 
-	// // TODO: is this correct?
-	// handler := k.msgRouter.Handler(msg)
-
-	// res, err := handler(ctx, channOpenMsg)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// ctx.EventManager().EmitEvents(res.GetEvents())
-
-	// var txMsgData sdk.TxMsgData
-	// proto.Unmarshal(res.Data, &txMsgData)
-
-	// firstMsgResponseData := txMsgData.Data[0].Data
-	// firstMsgResponse :=
-	// channelOpenInitResponse, ok := firstMsgResponse.GetCachedValue().(*channeltypes.MsgChannelOpenInitResponse)
-
 	if err != nil {
 		return nil, err
-		// sdkerrors.Wrapf(sdkerrors.ErrInvalidType, "failed to covert %T message response to %T", firstMsgResponse.GetCachedValue(), &channeltypes.MsgChannelOpenInitResponse{})
 	}
 
 	k.SetDexTransferChannelID(ctx, res.ChannelId)

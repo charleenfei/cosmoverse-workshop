@@ -132,7 +132,6 @@ func (im IBCMiddleware) OnRecvPacket(
 		if !found {
 			panic("hello")
 		}
-		// TODO: check amount and denom, mint fortune to sender, return refund to sender
 		var transferData transfertypes.FungibleTokenPacketData
 		if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &transferData); err == nil {
 			_, err = im.keeper.MintFortune(ctx, transferData, offerer)
