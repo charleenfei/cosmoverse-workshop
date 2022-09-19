@@ -63,18 +63,6 @@ func (k Keeper) GetUnownedFortunes(
 	return val, true
 }
 
-// RemoveFortunes removes a fortunes from the store
-func (k Keeper) RemoveFortunes(
-	ctx sdk.Context,
-	owner string,
-
-) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FortuneKeyPrefix))
-	store.Delete(types.FortuneKey(
-		owner,
-	))
-}
-
 // GetAllFortunes returns all owned fortunes
 func (k Keeper) GetAllOwnedFortunes(ctx sdk.Context) (list []types.Fortune) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FortuneKeyPrefix))

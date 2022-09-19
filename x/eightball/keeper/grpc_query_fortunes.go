@@ -16,12 +16,9 @@ func (k Keeper) Fortunes(c context.Context, req *types.QueryFortunesRequest) (*t
 
 	ctx := sdk.UnwrapSDKContext(c)
 
-	fortuneList, found := k.GetUnownedFortunes(ctx)
-	if !found {
-		return nil, status.Error(codes.NotFound, "not found")
-	}
+	fortuneList := k.GetAllOwnedFortunes(ctx)
 
-	return &types.QueryFortunesResponse{Fortunes: fortuneList.Fortunes}, nil
+	return &types.QueryFortunesResponse{Fortunes: fortuneList}, nil
 }
 
 func (k Keeper) Fortune(c context.Context, req *types.QueryFortuneRequest) (*types.QueryFortuneResponse, error) {
