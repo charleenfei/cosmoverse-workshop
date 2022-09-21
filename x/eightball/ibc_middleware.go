@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/charleenfei/cosmoverse-workshop/x/eightball/keeper"
+	"github.com/charleenfei/cosmoverse-workshop/x/eightball/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
@@ -128,16 +129,31 @@ func (im IBCMiddleware) OnRecvPacket(
 	// call underlying callback
 	ack := im.app.OnRecvPacket(ctx, packet, relayer)
 	if ack.Success() {
-		offerer, found := im.keeper.GetTransferRecvSeqToOfferer(ctx, packet.Sequence)
-		if !found {
-			panic("hello")
-		}
 		var transferData transfertypes.FungibleTokenPacketData
 		if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &transferData); err == nil {
-			_, err = im.keeper.MintFortune(ctx, transferData, offerer)
-			if err != nil {
+			workflow, found := im.keeper.GetPacketToWorkflow(ctx, types.DstOrigin, packet.DestinationPort, packet.DestinationChannel, packet.Sequence)
+			// the transfer recv packet arrived before the acknowledgement
+			// we can't associate this packet with the offerer until we get the ICA Ack
+			// but we can save the swapped coins here to retrieve later
+			transferAmount, ok := sdk.NewIntFromString(transferData.Amount)
+			if !ok {
+				err := sdkerrors.Wrapf(transfertypes.ErrInvalidAmount, "unable to parse transfer amount (%s) into math.Int", transferData.Amount)
 				return channeltypes.NewErrorAcknowledgement(err.Error())
 			}
+			transferCoin := sdk.NewCoin(transferData.Denom, transferAmount)
+
+			if !found {
+
+				workflow := types.NewWorkflow(sdk.AccAddress{}, transferCoin)
+				im.keeper.SetPacketToWorkflow(ctx, types.DstOrigin, packet.DestinationPort, packet.DestinationChannel, packet.Sequence, workflow)
+			} else {
+				workflow.SwappedCoin = transferCoin
+				_, err = im.keeper.MintFortune(ctx, workflow)
+				if err != nil {
+					return channeltypes.NewErrorAcknowledgement(err.Error())
+				}
+			}
+
 		}
 
 	}
@@ -160,12 +176,12 @@ func (im IBCMiddleware) OnAcknowledgementPacket(
 	var transferData transfertypes.FungibleTokenPacketData
 	var icaData icatypes.InterchainAccountPacketData
 	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &transferData); err == nil {
-		err = im.keeper.OnTransferAck(ctx, transferData, packet.Sequence, ack.Success())
+		err = im.keeper.OnTransferAck(ctx, transferData, packet, ack.Success())
 		if err != nil {
 			return sdkerrors.Wrap(err, "failed eightball transfer ack callback")
 		}
 	} else if err := icatypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &icaData); err == nil {
-		err = im.keeper.OnICAAck(ctx, icaData, packet.Sequence, ack)
+		err = im.keeper.OnICAAck(ctx, icaData, packet, ack)
 		if err != nil {
 			return sdkerrors.Wrap(err, "failed eightball ica ack callback")
 		}

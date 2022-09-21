@@ -1,13 +1,14 @@
 package keeper
 
 import (
-	"errors"
 	"fmt"
+	"math/rand"
 
 	"github.com/charleenfei/cosmoverse-workshop/x/eightball/types"
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	transfertypes "github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
 )
 
@@ -39,22 +40,22 @@ func (k Keeper) GetFortune(
 	return val, true
 }
 
-func (k Keeper) SetUnownedFortunes(ctx sdk.Context, fortunes []types.Fortune) {
+func (k Keeper) SetAllFortunes(ctx sdk.Context, fortunes []types.Fortune) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FortuneKeyPrefix))
 	fortuneList := types.FortuneList{
 		Fortunes: fortunes,
 	}
 	b := types.ModuleCdc.MustMarshal(&fortuneList)
-	store.Set(types.UnownedFortuneKey(), b)
+	store.Set(types.AllFortuneKey(), b)
 }
 
-func (k Keeper) GetUnownedFortunes(
+func (k Keeper) GetAllFortunes(
 	ctx sdk.Context,
 
 ) (val types.FortuneList, found bool) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FortuneKeyPrefix))
 
-	b := store.Get(types.UnownedFortuneKey())
+	b := store.Get(types.AllFortuneKey())
 	if b == nil {
 		return val, false
 	}
@@ -91,8 +92,9 @@ func (k Keeper) GetAllOwnedFortunes(ctx sdk.Context) (list []types.Fortune) {
 	return
 }
 
-func (k Keeper) MintFortune(ctx sdk.Context, data transfertypes.FungibleTokenPacketData, offerer sdk.AccAddress) (types.Fortune, error) {
-	fortuneList, _ := k.GetUnownedFortunes(ctx)
+// called when workflow is complete
+func (k Keeper) MintFortune(ctx sdk.Context, workflow types.Workflow) (types.Fortune, error) {
+	fortuneList, _ := k.GetAllFortunes(ctx)
 	var availableFortunes []types.Fortune
 	var err error
 
@@ -102,20 +104,29 @@ func (k Keeper) MintFortune(ctx sdk.Context, data transfertypes.FungibleTokenPac
 		}
 	}
 
-	transferAmount, _ := sdk.NewIntFromString(data.Amount)
-	transferCoin := sdk.NewCoin(data.Denom, transferAmount)
+	offerer := sdk.MustAccAddressFromBech32(workflow.Offerer)
+	swappedCoin := workflow.SwappedCoin
+
+	dexChannelId, found := k.GetDexTransferChannelID(ctx)
+	if !found {
+		return types.Fortune{}, fmt.Errorf("dexCHannelid not found")
+	}
+
+	ibcTrace := GetIBCTrace(swappedCoin.Denom, transfertypes.PortID, dexChannelId)
+	ibcCoin := sdk.NewCoin(ibcTrace.IBCDenom(), swappedCoin.Amount)
 
 	// if there are no available fortunes, refund the tokens back to the original offerer
 	if len(availableFortunes) == 0 {
-		if err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, offerer, sdk.NewCoins(transferCoin)); err != nil {
+		if err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, offerer, sdk.NewCoins(ibcCoin)); err != nil {
 			return types.Fortune{}, err
 		}
 		return types.Fortune{}, fmt.Errorf("available fortunes list is empty. original FortuneList: %#v", fortuneList)
 	}
 
 	// use block time here to generate random index to enforce determinism
-	randInt := int(ctx.BlockTime().UnixNano()) % len(availableFortunes)
-	selectedFortune := availableFortunes[randInt]
+	rand.Seed(ctx.BlockTime().UnixNano())
+	index := rand.Intn(len(availableFortunes))
+	selectedFortune := availableFortunes[index]
 
 	// check to see if the amount that has been transferred is enough to mint a fortune, if not, error
 	fortunePrice, err := sdk.ParseCoinNormalized(selectedFortune.Price)
@@ -123,16 +134,27 @@ func (k Keeper) MintFortune(ctx sdk.Context, data transfertypes.FungibleTokenPac
 		return types.Fortune{}, err
 	}
 
-	if transferCoin.IsLT(fortunePrice) {
-		return types.Fortune{}, errors.New("not enough money offered, try again")
+	if swappedCoin.IsLT(fortunePrice) {
+		if err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, offerer, sdk.NewCoins(ibcCoin)); err != nil {
+			return types.Fortune{}, err
+		}
+		return types.Fortune{}, fmt.Errorf("available fortunes list is empty. original FortuneList: %#v", fortuneList)
 	}
 
 	selectedFortune.Owner = offerer.String()
 	k.SetFortune(ctx, selectedFortune)
 
+	fortuneList.Fortunes[index] = selectedFortune
+	k.SetAllFortunes(ctx, fortuneList.Fortunes)
+
 	// refund the rest of the tokens to original sender
-	leftoverCoin := transferCoin.SubAmount(fortunePrice.Amount)
+	leftoverCoin := ibcCoin.SubAmount(fortunePrice.Amount)
 	k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, offerer, sdk.NewCoins(leftoverCoin))
 
 	return selectedFortune, nil
+}
+
+// GetIBCTrace returns the trace of the full token denom sent to the receiving channel
+func GetIBCTrace(fullTokenDenom string, portID, channelID string) transfertypes.DenomTrace {
+	return transfertypes.ParseDenomTrace(fmt.Sprintf("%s/%s/%s", portID, channelID, fullTokenDenom))
 }

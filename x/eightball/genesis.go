@@ -10,7 +10,7 @@ import (
 // state.
 func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) {
 	// Set all the fortune
-	k.SetUnownedFortunes(ctx, genState.FortunesList)
+	k.SetAllFortunes(ctx, genState.FortunesList)
 	// this line is used by starport scaffolding # genesis/module/init
 	k.SetParams(ctx, genState.Params)
 }
@@ -20,7 +20,7 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 	genesis := types.DefaultGenesis()
 	genesis.Params = k.GetParams(ctx)
 
-	fortunesList, _ := k.GetUnownedFortunes(ctx)
+	fortunesList, _ := k.GetAllFortunes(ctx)
 	genesis.FortunesList = fortunesList.Fortunes
 	// this line is used by starport scaffolding # genesis/module/export
 

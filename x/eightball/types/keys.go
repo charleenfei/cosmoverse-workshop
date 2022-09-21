@@ -29,10 +29,15 @@ const (
 	DexTransferChannelKeyPrefix = "dexTransferChannel"
 	DexConnectionKeyPrefix      = "dexConnection"
 
+	PacketRequestKeyPrefix = "packetRequest"
+
 	TransferSeqKeyPrefix     = "transferSeq"
 	TransferRecvSeqKeyPrefix = "transferRecvSeq"
 
 	ICASeqKeyPrefix = "icaSeq"
+
+	SrcOrigin = "src"
+	DstOrigin = "dest"
 )
 
 func KeyPrefix(p string) []byte {
@@ -50,6 +55,10 @@ func KeyDexTransferChannel(eightballModuleName string) []byte {
 
 func KeyDexConnection(eightballModuleName string) []byte {
 	return []byte(fmt.Sprintf("%s/%s", DexConnectionKeyPrefix, eightballModuleName))
+}
+
+func KeyPacketToRequest(origin, portID, channelID string, sequence uint64) []byte {
+	return []byte(fmt.Sprintf("%s/%s/%s/%s/%d", PacketRequestKeyPrefix, origin, portID, channelID, sequence))
 }
 
 func KeyTransferSeq(transferSeq uint64) []byte {

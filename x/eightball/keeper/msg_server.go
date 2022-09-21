@@ -32,7 +32,7 @@ var _ types.MsgServer = msgServer{}
 func (k msgServer) FeelingLucky(goCtx context.Context, msg *types.MsgFeelingLucky) (*types.MsgFeelingLuckyResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	fortuneList, _ := k.GetUnownedFortunes(ctx)
+	fortuneList, _ := k.GetAllFortunes(ctx)
 
 	// check if there is already a fortune belonging to the msg sender, if there is reject the tx
 	for _, fortune := range fortuneList.Fortunes {
@@ -89,8 +89,12 @@ func (k msgServer) FeelingLucky(goCtx context.Context, msg *types.MsgFeelingLuck
 		)
 	}
 
-	//  save k/v pair which associates the sender of the FeelingLucky msg w the sequence number of transfer
-	k.SetTransferSeqToOfferer(ctx, sequence, sender)
+	// create the request workflow
+
+	//  associate the packet send with the workflow so that we can continue workflow
+	// on packet ack
+	workflow := types.NewWorkflow(sender, sdk.Coin{})
+	k.SetPacketToWorkflow(ctx, types.SrcOrigin, transfertypes.PortID, dexChannelId, sequence, workflow)
 
 	// send an IBC transfer from the eightball module account to the ica account
 	// it controls on host chain simple-dex
