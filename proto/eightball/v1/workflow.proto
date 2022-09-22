@@ -1,0 +1,13 @@
+syntax = "proto3";
+package eightball.v1;
+
+import "cosmos/base/v1beta1/coin.proto";
+import "gogoproto/gogo.proto";
+import "ibc/core/channel/v1/channel.proto";
+
+option go_package = "github.com/charleenfei/cosmoverse-workshop/x/eightball/types";
+
+message Workflow {
+    string offerer = 1;
+    cosmos.base.v1beta1.Coin swapped_coin = 2 [(gogoproto.nullable)     = false];
+}

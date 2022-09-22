@@ -117,47 +117,22 @@ func (k Keeper) GetDexConnectionID(ctx sdk.Context) (string, bool) {
 	return string(store.Get(key)), true
 }
 
-func (k Keeper) SetTransferSeqToOfferer(ctx sdk.Context, transferSeq uint64, offerer sdk.AccAddress) {
+func (k Keeper) SetPacketToWorkflow(ctx sdk.Context, origin, portID, channelID string, sequence uint64, workflow types.Workflow) {
 	store := ctx.KVStore(k.storeKey)
-	store.Set(types.KeyTransferSeq(transferSeq), offerer)
+	key := types.KeyPacketToRequest(origin, portID, channelID, sequence)
+	bz := k.cdc.MustMarshal(&workflow)
+	store.Set(key, bz)
 }
 
-func (k Keeper) GetTransferSeqToOfferer(ctx sdk.Context, transferSeq uint64) (sdk.AccAddress, bool) {
+func (k Keeper) GetPacketToWorkflow(ctx sdk.Context, origin, portID, channelID string, sequence uint64) (types.Workflow, bool) {
 	store := ctx.KVStore(k.storeKey)
-	key := types.KeyTransferSeq(transferSeq)
-	if !store.Has(key) {
-		return nil, false
+	key := types.KeyPacketToRequest(origin, portID, channelID, sequence)
+
+	bz := store.Get(key)
+	if bz == nil {
+		return types.Workflow{}, false
 	}
-
-	return store.Get(key), true
-}
-
-func (k Keeper) SetICASeqToOfferer(ctx sdk.Context, icaSeq uint64, offerer sdk.AccAddress) {
-	store := ctx.KVStore(k.storeKey)
-	store.Set(types.KeyICASeq(icaSeq), offerer)
-}
-
-func (k Keeper) GetICASeqToOfferer(ctx sdk.Context, icaSeq uint64) (sdk.AccAddress, bool) {
-	store := ctx.KVStore(k.storeKey)
-	key := types.KeyICASeq(icaSeq)
-	if !store.Has(key) {
-		return nil, false
-	}
-
-	return store.Get(key), true
-}
-
-func (k Keeper) SetTransferRecvSeqToOfferer(ctx sdk.Context, transferRecvSeq uint64, offerer sdk.AccAddress) {
-	store := ctx.KVStore(k.storeKey)
-	store.Set(types.KeyTransferRecvSeq(transferRecvSeq), offerer)
-}
-
-func (k Keeper) GetTransferRecvSeqToOfferer(ctx sdk.Context, transferRecvSeq uint64) (sdk.AccAddress, bool) {
-	store := ctx.KVStore(k.storeKey)
-	key := types.KeyTransferRecvSeq(transferRecvSeq)
-	if !store.Has(key) {
-		return nil, false
-	}
-
-	return store.Get(key), true
+	var workflow types.Workflow
+	k.cdc.MustUnmarshal(bz, &workflow)
+	return workflow, true
 }

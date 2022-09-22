@@ -20,7 +20,7 @@ import (
 	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
 )
 
-func (k Keeper) OnTransferAck(ctx sdk.Context, transferData transfertypes.FungibleTokenPacketData, packetSequence uint64, ackSuccess bool) error {
+func (k Keeper) OnTransferAck(ctx sdk.Context, transferData transfertypes.FungibleTokenPacketData, packet channeltypes.Packet, ackSuccess bool) error {
 	var offerer sdk.AccAddress
 	var offer sdk.Coin
 
@@ -119,13 +119,14 @@ func (k Keeper) OnTransferAck(ctx sdk.Context, transferData transfertypes.Fungib
 		}
 
 		// use the transfer sequence passed into this function to grab the sender of the FeelingLucky msg
-		offerer, found := k.GetTransferSeqToOfferer(ctx, packetSequence)
+		workflow, found := k.GetPacketToWorkflow(ctx, types.SrcOrigin, packet.GetSourcePort(), packet.GetSourceChannel(), packet.GetSequence())
 		if !found {
 			return types.ErrOffererNotFound
 		}
 
-		//  save k/v pair which associates the sender of the FeelingLucky msg w the sequence number of this ica packet
-		k.SetICASeqToOfferer(ctx, sequence, offerer)
+		// associate outgoing packet with Workflow so that we can continue workflow
+		// on ICA Ack
+		k.SetPacketToWorkflow(ctx, types.SrcOrigin, icaPortID, icaChannelID, sequence, workflow)
 
 		// timeoutTimestamp set to max value with the unsigned bit shifted to sastisfy hermes timestamp conversion
 		timeoutTimestamp := ctx.BlockTime().Add(time.Hour).UnixNano()
@@ -144,7 +145,7 @@ func (k Keeper) OnTransferAck(ctx sdk.Context, transferData transfertypes.Fungib
 	return nil
 }
 
-func (k Keeper) OnICAAck(ctx sdk.Context, icaData icatypes.InterchainAccountPacketData, packetSequence uint64, ack channeltypes.Acknowledgement) error {
+func (k Keeper) OnICAAck(ctx sdk.Context, icaData icatypes.InterchainAccountPacketData, packet channeltypes.Packet, ack channeltypes.Acknowledgement) error {
 	if ack.Success() {
 		txMsgData := &sdk.TxMsgData{}
 		if err := proto.Unmarshal(ack.GetResult(), txMsgData); err != nil {
@@ -158,12 +159,25 @@ func (k Keeper) OnICAAck(ctx sdk.Context, icaData icatypes.InterchainAccountPack
 				return err
 			}
 
-			offerer, found := k.GetICASeqToOfferer(ctx, packetSequence)
+			workflow, found := k.GetPacketToWorkflow(ctx, types.SrcOrigin, packet.GetSourcePort(), packet.GetSourceChannel(), packet.GetSequence())
 			if !found {
 				return errors.New("ica seq not found")
 			}
 
-			k.SetTransferRecvSeqToOfferer(ctx, swapResponse.Sequence, offerer)
+			dexChannelId, found := k.GetDexTransferChannelID(ctx)
+			if !found {
+				return types.ErrDexChannelNotFound
+			}
+
+			if tWorkflow, found := k.GetPacketToWorkflow(ctx, types.DstOrigin, transfertypes.PortID, dexChannelId, swapResponse.Sequence); found {
+				workflow.SwappedCoin = tWorkflow.SwappedCoin
+				// distribute funds
+				k.MintFortune(ctx, workflow)
+			} else {
+				// associate incoming packet with Workflow so that we can continue workflow
+				// on RecvPacket
+				k.SetPacketToWorkflow(ctx, types.DstOrigin, transfertypes.PortID, dexChannelId, swapResponse.Sequence, workflow)
+			}
 
 		default:
 			return errors.New("unexpected number of messages")
