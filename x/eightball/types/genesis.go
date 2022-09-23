@@ -10,7 +10,7 @@ func DefaultGenesis() *GenesisState {
 			{
 				Owner:   "",
 				Price:   "100token",
-				Fortune: "Trust, but sill keep your eyes open.",
+				Fortune: "Trust, but still keep your eyes open.",
 			},
 			{
 				Owner:   "",

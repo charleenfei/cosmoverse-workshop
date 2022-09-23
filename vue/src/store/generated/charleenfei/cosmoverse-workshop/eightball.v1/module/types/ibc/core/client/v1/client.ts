@@ -2,6 +2,7 @@
 import * as Long from "long";
 import { util, configure, Writer, Reader } from "protobufjs/minimal";
 import { Any } from "../../../../google/protobuf/any";
+import { Plan } from "../../../../cosmos/upgrade/v1beta1/upgrade";
 
 export const protobufPackage = "ibc.core.client.v1";
 
@@ -16,7 +17,10 @@ export interface IdentifiedClientState {
   client_state: Any | undefined;
 }
 
-/** ConsensusStateWithHeight defines a consensus state with an additional height field. */
+/**
+ * ConsensusStateWithHeight defines a consensus state with an additional height
+ * field.
+ */
 export interface ConsensusStateWithHeight {
   /** consensus state height */
   height: Height | undefined;
@@ -36,11 +40,10 @@ export interface ClientConsensusStates {
 }
 
 /**
- * ClientUpdateProposal is a governance proposal. If it passes, the substitute client's
- * consensus states starting from the 'initial height' are copied over to the subjects
- * client state. The proposal handler may fail if the subject and the substitute do not
- * match in client and chain parameters (with exception to latest height, frozen height, and chain-id).
- * The updated client must also be valid (cannot be expired).
+ * ClientUpdateProposal is a governance proposal. If it passes, the substitute
+ * client's latest consensus state is copied over to the subject client. The proposal
+ * handler may fail if the subject and the substitute do not match in client and
+ * chain parameters (with exception to latest height, frozen height, and chain-id).
  */
 export interface ClientUpdateProposal {
   /** the title of the update proposal */
@@ -49,10 +52,30 @@ export interface ClientUpdateProposal {
   description: string;
   /** the client identifier for the client to be updated if the proposal passes */
   subject_client_id: string;
-  /** the substitute client identifier for the client standing in for the subject client */
+  /**
+   * the substitute client identifier for the client standing in for the subject
+   * client
+   */
   substitute_client_id: string;
-  /** the intital height to copy consensus states from the substitute to the subject */
-  initial_height: Height | undefined;
+}
+
+/**
+ * UpgradeProposal is a gov Content type for initiating an IBC breaking
+ * upgrade.
+ */
+export interface UpgradeProposal {
+  title: string;
+  description: string;
+  plan: Plan | undefined;
+  /**
+   * An UpgradedClientState must be provided to perform an IBC breaking upgrade.
+   * This will make the chain commit to the correct upgraded (self) client state
+   * before the upgrade occurs, so that connecting chains can verify that the
+   * new upgraded client is valid by verifying a proof on the previous version
+   * of the chain. This will allow IBC connections to persist smoothly across
+   * planned chain upgrades
+   */
+  upgraded_client_state: Any | undefined;
 }
 
 /**
@@ -60,11 +83,12 @@ export interface ClientUpdateProposal {
  * that can be compared against another Height for the purposes of updating and
  * freezing clients
  *
- * Normally the RevisionHeight is incremented at each height while keeping RevisionNumber
- * the same. However some consensus algorithms may choose to reset the
- * height in certain conditions e.g. hard forks, state-machine breaking changes
- * In these cases, the RevisionNumber is incremented so that height continues to
- * be monitonically increasing even as the RevisionHeight gets reset
+ * Normally the RevisionHeight is incremented at each height while keeping
+ * RevisionNumber the same. However some consensus algorithms may choose to
+ * reset the height in certain conditions e.g. hard forks, state-machine
+ * breaking changes In these cases, the RevisionNumber is incremented so that
+ * height continues to be monitonically increasing even as the RevisionHeight
+ * gets reset
  */
 export interface Height {
   /** the revision that the client is currently on */
@@ -373,9 +397,6 @@ export const ClientUpdateProposal = {
     if (message.substitute_client_id !== "") {
       writer.uint32(34).string(message.substitute_client_id);
     }
-    if (message.initial_height !== undefined) {
-      Height.encode(message.initial_height, writer.uint32(42).fork()).ldelim();
-    }
     return writer;
   },
 
@@ -397,9 +418,6 @@ export const ClientUpdateProposal = {
           break;
         case 4:
           message.substitute_client_id = reader.string();
-          break;
-        case 5:
-          message.initial_height = Height.decode(reader, reader.uint32());
           break;
         default:
           reader.skipType(tag & 7);
@@ -437,11 +455,6 @@ export const ClientUpdateProposal = {
     } else {
       message.substitute_client_id = "";
     }
-    if (object.initial_height !== undefined && object.initial_height !== null) {
-      message.initial_height = Height.fromJSON(object.initial_height);
-    } else {
-      message.initial_height = undefined;
-    }
     return message;
   },
 
@@ -454,10 +467,6 @@ export const ClientUpdateProposal = {
       (obj.subject_client_id = message.subject_client_id);
     message.substitute_client_id !== undefined &&
       (obj.substitute_client_id = message.substitute_client_id);
-    message.initial_height !== undefined &&
-      (obj.initial_height = message.initial_height
-        ? Height.toJSON(message.initial_height)
-        : undefined);
     return obj;
   },
 
@@ -489,10 +498,129 @@ export const ClientUpdateProposal = {
     } else {
       message.substitute_client_id = "";
     }
-    if (object.initial_height !== undefined && object.initial_height !== null) {
-      message.initial_height = Height.fromPartial(object.initial_height);
+    return message;
+  },
+};
+
+const baseUpgradeProposal: object = { title: "", description: "" };
+
+export const UpgradeProposal = {
+  encode(message: UpgradeProposal, writer: Writer = Writer.create()): Writer {
+    if (message.title !== "") {
+      writer.uint32(10).string(message.title);
+    }
+    if (message.description !== "") {
+      writer.uint32(18).string(message.description);
+    }
+    if (message.plan !== undefined) {
+      Plan.encode(message.plan, writer.uint32(26).fork()).ldelim();
+    }
+    if (message.upgraded_client_state !== undefined) {
+      Any.encode(
+        message.upgraded_client_state,
+        writer.uint32(34).fork()
+      ).ldelim();
+    }
+    return writer;
+  },
+
+  decode(input: Reader | Uint8Array, length?: number): UpgradeProposal {
+    const reader = input instanceof Uint8Array ? new Reader(input) : input;
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = { ...baseUpgradeProposal } as UpgradeProposal;
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.title = reader.string();
+          break;
+        case 2:
+          message.description = reader.string();
+          break;
+        case 3:
+          message.plan = Plan.decode(reader, reader.uint32());
+          break;
+        case 4:
+          message.upgraded_client_state = Any.decode(reader, reader.uint32());
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): UpgradeProposal {
+    const message = { ...baseUpgradeProposal } as UpgradeProposal;
+    if (object.title !== undefined && object.title !== null) {
+      message.title = String(object.title);
     } else {
-      message.initial_height = undefined;
+      message.title = "";
+    }
+    if (object.description !== undefined && object.description !== null) {
+      message.description = String(object.description);
+    } else {
+      message.description = "";
+    }
+    if (object.plan !== undefined && object.plan !== null) {
+      message.plan = Plan.fromJSON(object.plan);
+    } else {
+      message.plan = undefined;
+    }
+    if (
+      object.upgraded_client_state !== undefined &&
+      object.upgraded_client_state !== null
+    ) {
+      message.upgraded_client_state = Any.fromJSON(
+        object.upgraded_client_state
+      );
+    } else {
+      message.upgraded_client_state = undefined;
+    }
+    return message;
+  },
+
+  toJSON(message: UpgradeProposal): unknown {
+    const obj: any = {};
+    message.title !== undefined && (obj.title = message.title);
+    message.description !== undefined &&
+      (obj.description = message.description);
+    message.plan !== undefined &&
+      (obj.plan = message.plan ? Plan.toJSON(message.plan) : undefined);
+    message.upgraded_client_state !== undefined &&
+      (obj.upgraded_client_state = message.upgraded_client_state
+        ? Any.toJSON(message.upgraded_client_state)
+        : undefined);
+    return obj;
+  },
+
+  fromPartial(object: DeepPartial<UpgradeProposal>): UpgradeProposal {
+    const message = { ...baseUpgradeProposal } as UpgradeProposal;
+    if (object.title !== undefined && object.title !== null) {
+      message.title = object.title;
+    } else {
+      message.title = "";
+    }
+    if (object.description !== undefined && object.description !== null) {
+      message.description = object.description;
+    } else {
+      message.description = "";
+    }
+    if (object.plan !== undefined && object.plan !== null) {
+      message.plan = Plan.fromPartial(object.plan);
+    } else {
+      message.plan = undefined;
+    }
+    if (
+      object.upgraded_client_state !== undefined &&
+      object.upgraded_client_state !== null
+    ) {
+      message.upgraded_client_state = Any.fromPartial(
+        object.upgraded_client_state
+      );
+    } else {
+      message.upgraded_client_state = undefined;
     }
     return message;
   },

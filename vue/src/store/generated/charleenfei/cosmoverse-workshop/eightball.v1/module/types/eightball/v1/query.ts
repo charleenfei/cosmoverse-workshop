@@ -22,10 +22,10 @@ export interface QueryFortuneResponse {
   fortune: Fortune | undefined;
 }
 
-export interface QueryFortunesRequest {}
+export interface QueryOwnedFortunesRequest {}
 
-export interface QueryFortunesResponse {
-  fortunes: Fortune[];
+export interface QueryOwnedFortunesResponse {
+  owned_fortunes: Fortune[];
 }
 
 const baseQueryParamsRequest: object = {};
@@ -244,17 +244,25 @@ export const QueryFortuneResponse = {
   },
 };
 
-const baseQueryFortunesRequest: object = {};
+const baseQueryOwnedFortunesRequest: object = {};
 
-export const QueryFortunesRequest = {
-  encode(_: QueryFortunesRequest, writer: Writer = Writer.create()): Writer {
+export const QueryOwnedFortunesRequest = {
+  encode(
+    _: QueryOwnedFortunesRequest,
+    writer: Writer = Writer.create()
+  ): Writer {
     return writer;
   },
 
-  decode(input: Reader | Uint8Array, length?: number): QueryFortunesRequest {
+  decode(
+    input: Reader | Uint8Array,
+    length?: number
+  ): QueryOwnedFortunesRequest {
     const reader = input instanceof Uint8Array ? new Reader(input) : input;
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseQueryFortunesRequest } as QueryFortunesRequest;
+    const message = {
+      ...baseQueryOwnedFortunesRequest,
+    } as QueryOwnedFortunesRequest;
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -266,45 +274,56 @@ export const QueryFortunesRequest = {
     return message;
   },
 
-  fromJSON(_: any): QueryFortunesRequest {
-    const message = { ...baseQueryFortunesRequest } as QueryFortunesRequest;
+  fromJSON(_: any): QueryOwnedFortunesRequest {
+    const message = {
+      ...baseQueryOwnedFortunesRequest,
+    } as QueryOwnedFortunesRequest;
     return message;
   },
 
-  toJSON(_: QueryFortunesRequest): unknown {
+  toJSON(_: QueryOwnedFortunesRequest): unknown {
     const obj: any = {};
     return obj;
   },
 
-  fromPartial(_: DeepPartial<QueryFortunesRequest>): QueryFortunesRequest {
-    const message = { ...baseQueryFortunesRequest } as QueryFortunesRequest;
+  fromPartial(
+    _: DeepPartial<QueryOwnedFortunesRequest>
+  ): QueryOwnedFortunesRequest {
+    const message = {
+      ...baseQueryOwnedFortunesRequest,
+    } as QueryOwnedFortunesRequest;
     return message;
   },
 };
 
-const baseQueryFortunesResponse: object = {};
+const baseQueryOwnedFortunesResponse: object = {};
 
-export const QueryFortunesResponse = {
+export const QueryOwnedFortunesResponse = {
   encode(
-    message: QueryFortunesResponse,
+    message: QueryOwnedFortunesResponse,
     writer: Writer = Writer.create()
   ): Writer {
-    for (const v of message.fortunes) {
+    for (const v of message.owned_fortunes) {
       Fortune.encode(v!, writer.uint32(10).fork()).ldelim();
     }
     return writer;
   },
 
-  decode(input: Reader | Uint8Array, length?: number): QueryFortunesResponse {
+  decode(
+    input: Reader | Uint8Array,
+    length?: number
+  ): QueryOwnedFortunesResponse {
     const reader = input instanceof Uint8Array ? new Reader(input) : input;
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseQueryFortunesResponse } as QueryFortunesResponse;
-    message.fortunes = [];
+    const message = {
+      ...baseQueryOwnedFortunesResponse,
+    } as QueryOwnedFortunesResponse;
+    message.owned_fortunes = [];
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          message.fortunes.push(Fortune.decode(reader, reader.uint32()));
+          message.owned_fortunes.push(Fortune.decode(reader, reader.uint32()));
           break;
         default:
           reader.skipType(tag & 7);
@@ -314,37 +333,41 @@ export const QueryFortunesResponse = {
     return message;
   },
 
-  fromJSON(object: any): QueryFortunesResponse {
-    const message = { ...baseQueryFortunesResponse } as QueryFortunesResponse;
-    message.fortunes = [];
-    if (object.fortunes !== undefined && object.fortunes !== null) {
-      for (const e of object.fortunes) {
-        message.fortunes.push(Fortune.fromJSON(e));
+  fromJSON(object: any): QueryOwnedFortunesResponse {
+    const message = {
+      ...baseQueryOwnedFortunesResponse,
+    } as QueryOwnedFortunesResponse;
+    message.owned_fortunes = [];
+    if (object.owned_fortunes !== undefined && object.owned_fortunes !== null) {
+      for (const e of object.owned_fortunes) {
+        message.owned_fortunes.push(Fortune.fromJSON(e));
       }
     }
     return message;
   },
 
-  toJSON(message: QueryFortunesResponse): unknown {
+  toJSON(message: QueryOwnedFortunesResponse): unknown {
     const obj: any = {};
-    if (message.fortunes) {
-      obj.fortunes = message.fortunes.map((e) =>
+    if (message.owned_fortunes) {
+      obj.owned_fortunes = message.owned_fortunes.map((e) =>
         e ? Fortune.toJSON(e) : undefined
       );
     } else {
-      obj.fortunes = [];
+      obj.owned_fortunes = [];
     }
     return obj;
   },
 
   fromPartial(
-    object: DeepPartial<QueryFortunesResponse>
-  ): QueryFortunesResponse {
-    const message = { ...baseQueryFortunesResponse } as QueryFortunesResponse;
-    message.fortunes = [];
-    if (object.fortunes !== undefined && object.fortunes !== null) {
-      for (const e of object.fortunes) {
-        message.fortunes.push(Fortune.fromPartial(e));
+    object: DeepPartial<QueryOwnedFortunesResponse>
+  ): QueryOwnedFortunesResponse {
+    const message = {
+      ...baseQueryOwnedFortunesResponse,
+    } as QueryOwnedFortunesResponse;
+    message.owned_fortunes = [];
+    if (object.owned_fortunes !== undefined && object.owned_fortunes !== null) {
+      for (const e of object.owned_fortunes) {
+        message.owned_fortunes.push(Fortune.fromPartial(e));
       }
     }
     return message;
@@ -353,10 +376,12 @@ export const QueryFortunesResponse = {
 
 /** Query defines the gRPC querier service. */
 export interface Query {
-  /** Queries a Fortune by index. */
+  /** Queries a Fortune by owner. */
   Fortune(request: QueryFortuneRequest): Promise<QueryFortuneResponse>;
-  /** Queries a list of Fortunes items. */
-  Fortunes(request: QueryFortunesRequest): Promise<QueryFortunesResponse>;
+  /** Queries a list of owned fortunes. */
+  Fortunes(
+    request: QueryOwnedFortunesRequest
+  ): Promise<QueryOwnedFortunesResponse>;
 }
 
 export class QueryClientImpl implements Query {
@@ -372,11 +397,13 @@ export class QueryClientImpl implements Query {
     );
   }
 
-  Fortunes(request: QueryFortunesRequest): Promise<QueryFortunesResponse> {
-    const data = QueryFortunesRequest.encode(request).finish();
+  Fortunes(
+    request: QueryOwnedFortunesRequest
+  ): Promise<QueryOwnedFortunesResponse> {
+    const data = QueryOwnedFortunesRequest.encode(request).finish();
     const promise = this.rpc.request("eightball.v1.Query", "Fortunes", data);
     return promise.then((data) =>
-      QueryFortunesResponse.decode(new Reader(data))
+      QueryOwnedFortunesResponse.decode(new Reader(data))
     );
   }
 }

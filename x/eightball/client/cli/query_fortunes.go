@@ -18,7 +18,7 @@ func CmdListFortunes() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			params := &types.QueryFortunesRequest{}
+			params := &types.QueryOwnedFortunesRequest{}
 
 			res, err := queryClient.Fortunes(context.Background(), params)
 			if err != nil {
