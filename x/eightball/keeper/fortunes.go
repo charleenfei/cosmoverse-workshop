@@ -78,18 +78,15 @@ func (k Keeper) RemoveFortunes(
 
 // GetAllFortunes returns all owned fortunes
 func (k Keeper) GetAllOwnedFortunes(ctx sdk.Context) (list []types.Fortune) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FortuneKeyPrefix))
-	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+	fortuneList, _ := k.GetAllFortunes(ctx)
+	var ownedFortunes []types.Fortune
 
-	defer iterator.Close()
-
-	for ; iterator.Valid(); iterator.Next() {
-		var val types.Fortune
-		k.cdc.MustUnmarshal(iterator.Value(), &val)
-		list = append(list, val)
+	for _, fortune := range fortuneList.Fortunes {
+		if fortune.Owner != "" {
+			ownedFortunes = append(ownedFortunes, fortune)
+		}
 	}
-
-	return
+	return ownedFortunes
 }
 
 // called when workflow is complete

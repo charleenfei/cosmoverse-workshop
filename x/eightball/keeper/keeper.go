@@ -9,8 +9,8 @@ import (
 
 	baseapp "github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/controller/keeper"
@@ -22,8 +22,8 @@ import (
 type (
 	Keeper struct {
 		cdc        codec.BinaryCodec
-		storeKey   sdk.StoreKey
-		memKey     sdk.StoreKey
+		storeKey   storetypes.StoreKey
+		memKey     storetypes.StoreKey
 		paramstore paramtypes.Subspace
 
 		accountKeeper types.AccountKeeper
@@ -33,7 +33,6 @@ type (
 
 		ibcKeeper           *ibckeeper.Keeper
 		transferKeeper      *transferkeeper.Keeper
-		scopedKeeper        capabilitykeeper.ScopedKeeper
 		icacontrollerKeeper *icacontrollerkeeper.Keeper
 
 		msgRouter *baseapp.MsgServiceRouter
@@ -43,7 +42,7 @@ type (
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey,
-	memKey sdk.StoreKey,
+	memKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
 
 	accountKeeper types.AccountKeeper,
@@ -53,7 +52,6 @@ func NewKeeper(
 
 	ibcKeeper *ibckeeper.Keeper,
 	transferKeeper *transferkeeper.Keeper,
-	scopedKeeper capabilitykeeper.ScopedKeeper,
 	icacontrollerKeeper *icacontrollerkeeper.Keeper,
 	msgRouter *baseapp.MsgServiceRouter,
 ) *Keeper {
@@ -76,7 +74,6 @@ func NewKeeper(
 
 		ibcKeeper:           ibcKeeper,
 		transferKeeper:      transferKeeper,
-		scopedKeeper:        scopedKeeper,
 		icacontrollerKeeper: icacontrollerKeeper,
 		msgRouter:           msgRouter,
 	}

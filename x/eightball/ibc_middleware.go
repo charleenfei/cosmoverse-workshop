@@ -138,7 +138,7 @@ func (im IBCMiddleware) OnRecvPacket(
 			transferAmount, ok := sdk.NewIntFromString(transferData.Amount)
 			if !ok {
 				err := sdkerrors.Wrapf(transfertypes.ErrInvalidAmount, "unable to parse transfer amount (%s) into math.Int", transferData.Amount)
-				return channeltypes.NewErrorAcknowledgement(err.Error())
+				return channeltypes.NewErrorAcknowledgement(err)
 			}
 			transferCoin := sdk.NewCoin(transferData.Denom, transferAmount)
 
@@ -150,7 +150,7 @@ func (im IBCMiddleware) OnRecvPacket(
 				workflow.SwappedCoin = transferCoin
 				_, err = im.keeper.MintFortune(ctx, workflow)
 				if err != nil {
-					return channeltypes.NewErrorAcknowledgement(err.Error())
+					return channeltypes.NewErrorAcknowledgement(err)
 				}
 			}
 

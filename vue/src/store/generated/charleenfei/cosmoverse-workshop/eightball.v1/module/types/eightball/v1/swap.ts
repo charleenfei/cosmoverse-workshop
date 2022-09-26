@@ -3,7 +3,7 @@ import * as Long from "long";
 import { util, configure, Writer, Reader } from "protobufjs/minimal";
 import { Coin } from "../../cosmos/base/v1beta1/coin";
 
-export const protobufPackage = "eightball.v1";
+export const protobufPackage = "simpledex.simpledex";
 
 export interface MsgSwap {
   sender: string;

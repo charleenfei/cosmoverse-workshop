@@ -8,7 +8,6 @@ import (
 
 // x/eightball module sentinel errors
 var (
-	ErrAlreadyFortunate      = sdkerrors.Register(ModuleName, 1, "you already got your fortune!")
 	ErrInvalidPacketTimeout  = sdkerrors.Register(ModuleName, 2, "invalid packet timeout")
 	ErrInvalidVersion        = sdkerrors.Register(ModuleName, 3, "invalid version")
 	ErrDexConnectionNotFound = sdkerrors.Register(ModuleName, 4, "dex connection id not found")

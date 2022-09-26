@@ -3,7 +3,6 @@ package eightball.v1;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "cosmos/base/query/v1beta1/pagination.proto";
 import "eightball/v1/params.proto";
 import "eightball/v1/fortunes.proto";
 // this line is used by starport scaffolding # 1
@@ -12,17 +11,15 @@ option go_package = "github.com/charleenfei/cosmoverse-workshop/x/eightball/type
 
 // Query defines the gRPC querier service.
 service Query {
-  // Queries a Fortune by index.
+  // Queries a Fortune by owner.
 	rpc Fortune(QueryFortuneRequest) returns (QueryFortuneResponse) {
 		option (google.api.http).get = "/charleenfei/cosmoverse-workshop/eightball/v1/fortune/{owner}";
 	}
 
-	// Queries a list of Fortunes items.
-	rpc Fortunes(QueryFortunesRequest) returns (QueryFortunesResponse) {
+	// Queries a list of owned fortunes.
+	rpc Fortunes(QueryOwnedFortunesRequest) returns (QueryOwnedFortunesResponse) {
 		option (google.api.http).get = "/charleenfei/cosmoverse-workshop/eightball/v1/fortunes";
 	}
-
-// this line is used by starport scaffolding # 2
 }
 
 // QueryParamsRequest is request type for the Query/Params RPC method.
@@ -43,11 +40,11 @@ message QueryFortuneResponse {
 	Fortune fortune = 1 [(gogoproto.nullable) = false];
 }
 
-message QueryFortunesRequest {
+message QueryOwnedFortunesRequest {
 }
 
-message QueryFortunesResponse {
-	repeated Fortune fortunes = 1 [(gogoproto.nullable) = false];
+message QueryOwnedFortunesResponse {
+	repeated Fortune owned_fortunes = 1 [(gogoproto.nullable) = false];
 }
 
 // this line is used by starport scaffolding # 3

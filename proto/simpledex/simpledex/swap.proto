@@ -1,9 +1,9 @@
 syntax = "proto3";
-package eightball.v1;
+package simpledex.simpledex;
 
 // this line is used by starport scaffolding # proto/tx/import
 
-option go_package = "github.com/charleenfei/cosmoverse-workshop/x/eightball/types";
+option go_package = "github.com/charleenfei/cosmoverse-workshop/x/simpledex/types";
 
 import "gogoproto/gogo.proto";
 import "cosmos/base/v1beta1/coin.proto";

@@ -9,7 +9,6 @@ message Fortune {
   string owner = 1; 
   string price = 2; 
   string fortune = 3; 
-  
 }
 
 message FortuneList {

@@ -6,7 +6,6 @@ package types
 import (
 	context "context"
 	fmt "fmt"
-	_ "github.com/cosmos/cosmos-sdk/types/query"
 	_ "github.com/gogo/protobuf/gogoproto"
 	grpc1 "github.com/gogo/protobuf/grpc"
 	proto "github.com/gogo/protobuf/proto"
@@ -201,21 +200,21 @@ func (m *QueryFortuneResponse) GetFortune() Fortune {
 	return Fortune{}
 }
 
-type QueryFortunesRequest struct {
+type QueryOwnedFortunesRequest struct {
 }
 
-func (m *QueryFortunesRequest) Reset()         { *m = QueryFortunesRequest{} }
-func (m *QueryFortunesRequest) String() string { return proto.CompactTextString(m) }
-func (*QueryFortunesRequest) ProtoMessage()    {}
-func (*QueryFortunesRequest) Descriptor() ([]byte, []int) {
+func (m *QueryOwnedFortunesRequest) Reset()         { *m = QueryOwnedFortunesRequest{} }
+func (m *QueryOwnedFortunesRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryOwnedFortunesRequest) ProtoMessage()    {}
+func (*QueryOwnedFortunesRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_81a760f2bfe25428, []int{4}
 }
-func (m *QueryFortunesRequest) XXX_Unmarshal(b []byte) error {
+func (m *QueryOwnedFortunesRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryFortunesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QueryOwnedFortunesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryFortunesRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QueryOwnedFortunesRequest.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -225,34 +224,34 @@ func (m *QueryFortunesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte
 		return b[:n], nil
 	}
 }
-func (m *QueryFortunesRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryFortunesRequest.Merge(m, src)
+func (m *QueryOwnedFortunesRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryOwnedFortunesRequest.Merge(m, src)
 }
-func (m *QueryFortunesRequest) XXX_Size() int {
+func (m *QueryOwnedFortunesRequest) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryFortunesRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryFortunesRequest.DiscardUnknown(m)
+func (m *QueryOwnedFortunesRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryOwnedFortunesRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryFortunesRequest proto.InternalMessageInfo
+var xxx_messageInfo_QueryOwnedFortunesRequest proto.InternalMessageInfo
 
-type QueryFortunesResponse struct {
-	Fortunes []Fortune `protobuf:"bytes,1,rep,name=fortunes,proto3" json:"fortunes"`
+type QueryOwnedFortunesResponse struct {
+	OwnedFortunes []Fortune `protobuf:"bytes,1,rep,name=owned_fortunes,json=ownedFortunes,proto3" json:"owned_fortunes"`
 }
 
-func (m *QueryFortunesResponse) Reset()         { *m = QueryFortunesResponse{} }
-func (m *QueryFortunesResponse) String() string { return proto.CompactTextString(m) }
-func (*QueryFortunesResponse) ProtoMessage()    {}
-func (*QueryFortunesResponse) Descriptor() ([]byte, []int) {
+func (m *QueryOwnedFortunesResponse) Reset()         { *m = QueryOwnedFortunesResponse{} }
+func (m *QueryOwnedFortunesResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryOwnedFortunesResponse) ProtoMessage()    {}
+func (*QueryOwnedFortunesResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_81a760f2bfe25428, []int{5}
 }
-func (m *QueryFortunesResponse) XXX_Unmarshal(b []byte) error {
+func (m *QueryOwnedFortunesResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryFortunesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QueryOwnedFortunesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryFortunesResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QueryOwnedFortunesResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -262,21 +261,21 @@ func (m *QueryFortunesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byt
 		return b[:n], nil
 	}
 }
-func (m *QueryFortunesResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryFortunesResponse.Merge(m, src)
+func (m *QueryOwnedFortunesResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryOwnedFortunesResponse.Merge(m, src)
 }
-func (m *QueryFortunesResponse) XXX_Size() int {
+func (m *QueryOwnedFortunesResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryFortunesResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryFortunesResponse.DiscardUnknown(m)
+func (m *QueryOwnedFortunesResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryOwnedFortunesResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryFortunesResponse proto.InternalMessageInfo
+var xxx_messageInfo_QueryOwnedFortunesResponse proto.InternalMessageInfo
 
-func (m *QueryFortunesResponse) GetFortunes() []Fortune {
+func (m *QueryOwnedFortunesResponse) GetOwnedFortunes() []Fortune {
 	if m != nil {
-		return m.Fortunes
+		return m.OwnedFortunes
 	}
 	return nil
 }
@@ -286,42 +285,41 @@ func init() {
 	proto.RegisterType((*QueryParamsResponse)(nil), "eightball.v1.QueryParamsResponse")
 	proto.RegisterType((*QueryFortuneRequest)(nil), "eightball.v1.QueryFortuneRequest")
 	proto.RegisterType((*QueryFortuneResponse)(nil), "eightball.v1.QueryFortuneResponse")
-	proto.RegisterType((*QueryFortunesRequest)(nil), "eightball.v1.QueryFortunesRequest")
-	proto.RegisterType((*QueryFortunesResponse)(nil), "eightball.v1.QueryFortunesResponse")
+	proto.RegisterType((*QueryOwnedFortunesRequest)(nil), "eightball.v1.QueryOwnedFortunesRequest")
+	proto.RegisterType((*QueryOwnedFortunesResponse)(nil), "eightball.v1.QueryOwnedFortunesResponse")
 }
 
 func init() { proto.RegisterFile("eightball/v1/query.proto", fileDescriptor_81a760f2bfe25428) }
 
 var fileDescriptor_81a760f2bfe25428 = []byte{
-	// 441 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x92, 0x4f, 0x6b, 0xd4, 0x40,
-	0x18, 0xc6, 0x33, 0xd5, 0xfe, 0x71, 0xf4, 0x34, 0xa6, 0xb2, 0x46, 0x89, 0x35, 0x5e, 0x44, 0x31,
-	0x43, 0x56, 0xfc, 0x73, 0xf0, 0x0f, 0x14, 0x14, 0x3c, 0x08, 0x75, 0x0f, 0x1e, 0xbc, 0x4d, 0x96,
-	0xb7, 0x49, 0x30, 0x3b, 0x6f, 0x3a, 0x33, 0x49, 0x2d, 0xe2, 0xc5, 0x4f, 0x20, 0xf4, 0xe0, 0x47,
-	0xf1, 0x2b, 0xf4, 0x58, 0xf0, 0xe2, 0x49, 0x64, 0xd7, 0x0f, 0x22, 0x9d, 0x4c, 0x96, 0x46, 0xca,
-	0x2e, 0xf4, 0xb6, 0x3b, 0xcf, 0x6f, 0x9e, 0xe7, 0x79, 0xdf, 0x0c, 0x1d, 0x40, 0x91, 0xe5, 0x26,
-	0x15, 0x65, 0xc9, 0x9b, 0x84, 0xef, 0xd5, 0xa0, 0x0e, 0xe2, 0x4a, 0xa1, 0x41, 0x76, 0x65, 0xae,
-	0xc4, 0x4d, 0x12, 0xf8, 0x19, 0x66, 0x68, 0x05, 0x7e, 0xf2, 0xab, 0x65, 0x82, 0x9b, 0x19, 0x62,
-	0x56, 0x02, 0x17, 0x55, 0xc1, 0x85, 0x94, 0x68, 0x84, 0x29, 0x50, 0x6a, 0xa7, 0xde, 0x1b, 0xa3,
-	0x9e, 0xa0, 0xe6, 0xa9, 0xd0, 0xd0, 0x5a, 0xf3, 0x26, 0x49, 0xc1, 0x88, 0x84, 0x57, 0x22, 0x2b,
-	0xa4, 0x85, 0x1d, 0x7b, 0xbd, 0xd7, 0xa3, 0x12, 0x4a, 0x4c, 0x3a, 0x9b, 0x1b, 0x3d, 0x69, 0x17,
-	0x95, 0xa9, 0x25, 0x38, 0x31, 0xf2, 0x29, 0x7b, 0x77, 0xe2, 0xbc, 0x63, 0x6f, 0x8c, 0x60, 0xaf,
-	0x06, 0x6d, 0xa2, 0x37, 0xf4, 0x6a, 0xef, 0x54, 0x57, 0x28, 0x35, 0xb0, 0x21, 0x5d, 0x6b, 0x9d,
-	0x07, 0x64, 0x8b, 0xdc, 0xbd, 0x3c, 0xf4, 0xe3, 0xd3, 0x33, 0xc6, 0x2d, 0xbd, 0x7d, 0xf1, 0xe8,
-	0xf7, 0x2d, 0x6f, 0xe4, 0xc8, 0xe8, 0xbe, 0xb3, 0x7a, 0xdd, 0xe6, 0xba, 0x04, 0xe6, 0xd3, 0x55,
-	0xdc, 0x97, 0xa0, 0xac, 0xd3, 0xa5, 0x51, 0xfb, 0x27, 0x7a, 0x4b, 0xfd, 0x3e, 0xec, 0x82, 0x1f,
-	0xd1, 0x75, 0xd7, 0xdb, 0x25, 0x6f, 0xf6, 0x93, 0x1d, 0xef, 0xa2, 0x3b, 0x36, 0xba, 0xd6, 0xb7,
-	0x9b, 0x8f, 0xb7, 0x43, 0x37, 0xff, 0x3b, 0x77, 0x39, 0x4f, 0xe8, 0x46, 0xb7, 0x9f, 0x01, 0xd9,
-	0xba, 0xb0, 0x2c, 0x68, 0x0e, 0x0f, 0x7f, 0xac, 0xd0, 0x55, 0x6b, 0xc9, 0xbe, 0x13, 0xba, 0xee,
-	0x28, 0x76, 0xbb, 0x7f, 0xf9, 0x8c, 0x3d, 0x04, 0xd1, 0x22, 0xa4, 0x6d, 0x15, 0xbd, 0xfa, 0xfa,
-	0xf3, 0xef, 0xe1, 0xca, 0x4b, 0xf6, 0x9c, 0x8f, 0x73, 0xa1, 0x4a, 0x00, 0xb9, 0x0b, 0x05, 0xb7,
-	0x8f, 0xa3, 0x01, 0xa5, 0xe1, 0xc1, 0x3e, 0xaa, 0x8f, 0x3a, 0xc7, 0x8a, 0x9f, 0xf5, 0xa5, 0xf9,
-	0x67, 0xbb, 0xdb, 0x2f, 0xec, 0x90, 0xd0, 0x8d, 0x6e, 0x62, 0xb6, 0x20, 0xb7, 0x5b, 0x53, 0x70,
-	0x67, 0x21, 0xe3, 0xca, 0xbd, 0xb0, 0xe5, 0x9e, 0xb2, 0xc7, 0xe7, 0x2a, 0xa7, 0xb7, 0xdf, 0x1f,
-	0x4d, 0x43, 0x72, 0x3c, 0x0d, 0xc9, 0x9f, 0x69, 0x48, 0xbe, 0xcd, 0x42, 0xef, 0x78, 0x16, 0x7a,
-	0xbf, 0x66, 0xa1, 0xf7, 0xe1, 0x59, 0x56, 0x98, 0xbc, 0x4e, 0xe3, 0x31, 0x4e, 0x96, 0x7a, 0x7f,
-	0x3a, 0xe5, 0x6e, 0x0e, 0x2a, 0xd0, 0xe9, 0x9a, 0x7d, 0xdf, 0x0f, 0xff, 0x05, 0x00, 0x00, 0xff,
-	0xff, 0x4e, 0xba, 0xeb, 0xce, 0xa1, 0x03, 0x00, 0x00,
+	// 431 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x92, 0xcd, 0xaa, 0xd3, 0x40,
+	0x1c, 0xc5, 0x33, 0x57, 0xef, 0xad, 0x8e, 0x1f, 0x8b, 0x31, 0x42, 0x9b, 0x4a, 0xac, 0xd9, 0x58,
+	0x10, 0x33, 0xb4, 0xa2, 0xb8, 0xf0, 0x03, 0x0a, 0x0a, 0x2e, 0x44, 0xed, 0xc2, 0x85, 0x1b, 0x4d,
+	0xdb, 0x69, 0x12, 0x4c, 0xe7, 0x9f, 0xce, 0x4c, 0x5a, 0x8b, 0xb8, 0xf1, 0x09, 0x04, 0x17, 0xae,
+	0x7c, 0x18, 0x77, 0x5d, 0x16, 0xdc, 0xb8, 0x12, 0x69, 0x7d, 0x10, 0xe9, 0x64, 0x52, 0x1a, 0x08,
+	0x16, 0xee, 0x2e, 0x99, 0x73, 0x72, 0x7e, 0x27, 0x27, 0xc1, 0x75, 0x16, 0x87, 0x91, 0x1a, 0x04,
+	0x49, 0x42, 0x67, 0x1d, 0x3a, 0xcd, 0x98, 0x58, 0xf8, 0xa9, 0x00, 0x05, 0xe4, 0xe2, 0x4e, 0xf1,
+	0x67, 0x1d, 0xc7, 0x0e, 0x21, 0x04, 0x2d, 0xd0, 0xed, 0x55, 0xee, 0x71, 0xae, 0x85, 0x00, 0x61,
+	0xc2, 0x68, 0x90, 0xc6, 0x34, 0xe0, 0x1c, 0x54, 0xa0, 0x62, 0xe0, 0xd2, 0xa8, 0x8d, 0x52, 0x76,
+	0x1a, 0x88, 0x60, 0x52, 0x48, 0xcd, 0x92, 0x34, 0x06, 0xa1, 0x32, 0xce, 0x8c, 0xe8, 0xd9, 0x98,
+	0xbc, 0xda, 0x16, 0x79, 0xa9, 0x9f, 0xe8, 0xb3, 0x69, 0xc6, 0xa4, 0xf2, 0x9e, 0xe1, 0x2b, 0xa5,
+	0x53, 0x99, 0x02, 0x97, 0x8c, 0x74, 0xf1, 0x49, 0x9e, 0x5c, 0x47, 0x2d, 0xd4, 0xbe, 0xd0, 0xb5,
+	0xfd, 0xfd, 0xde, 0x7e, 0xee, 0xee, 0x9d, 0x5d, 0xfe, 0xbe, 0x6e, 0xf5, 0x8d, 0xd3, 0xbb, 0x65,
+	0xa2, 0x9e, 0xe6, 0x5c, 0x43, 0x20, 0x36, 0x3e, 0x86, 0x39, 0x67, 0x42, 0x27, 0x9d, 0xef, 0xe7,
+	0x37, 0xde, 0x73, 0x6c, 0x97, 0xcd, 0x06, 0x7c, 0x17, 0xd7, 0x4c, 0x6f, 0x43, 0xbe, 0x5a, 0x26,
+	0x1b, 0xbf, 0x41, 0x17, 0x5e, 0xaf, 0x89, 0x1b, 0x3a, 0xee, 0xc5, 0x9c, 0xb3, 0x91, 0xf1, 0xec,
+	0xde, 0xf1, 0x1d, 0x76, 0xaa, 0x44, 0x43, 0xec, 0xe1, 0xcb, 0xdb, 0x4a, 0xa3, 0xb7, 0xc5, 0x5e,
+	0x75, 0xd4, 0x3a, 0x73, 0x08, 0x7c, 0x09, 0xf6, 0xb3, 0xba, 0x3f, 0x8e, 0xf0, 0xb1, 0x46, 0x90,
+	0x6f, 0x08, 0xd7, 0xcc, 0x31, 0xb9, 0x51, 0x4e, 0xa8, 0x18, 0xc7, 0xf1, 0xfe, 0x67, 0xc9, 0x0b,
+	0x7a, 0x4f, 0x3e, 0xff, 0xfc, 0xfb, 0xf5, 0xe8, 0x31, 0x79, 0x48, 0x87, 0x51, 0x20, 0x12, 0xc6,
+	0xf8, 0x98, 0xc5, 0x74, 0x08, 0x72, 0x02, 0x33, 0x26, 0x24, 0xbb, 0x3d, 0x07, 0xf1, 0x5e, 0x46,
+	0x90, 0xd2, 0xaa, 0xcf, 0x4f, 0x3f, 0xea, 0xc1, 0x3f, 0x91, 0xef, 0x08, 0x9f, 0x2b, 0x0a, 0x93,
+	0x9b, 0x15, 0xdc, 0xaa, 0xed, 0x9c, 0xf6, 0x61, 0xa3, 0xa9, 0xf9, 0x48, 0xd7, 0xbc, 0x4f, 0xee,
+	0x9d, 0xaa, 0xa6, 0xec, 0xbd, 0x5e, 0xae, 0x5d, 0xb4, 0x5a, 0xbb, 0xe8, 0xcf, 0xda, 0x45, 0x5f,
+	0x36, 0xae, 0xb5, 0xda, 0xb8, 0xd6, 0xaf, 0x8d, 0x6b, 0xbd, 0x79, 0x10, 0xc6, 0x2a, 0xca, 0x06,
+	0xfe, 0x10, 0x26, 0x07, 0xb3, 0x3f, 0xec, 0xa5, 0xab, 0x45, 0xca, 0xe4, 0xe0, 0x44, 0xff, 0xfe,
+	0x77, 0xfe, 0x05, 0x00, 0x00, 0xff, 0xff, 0x1d, 0x82, 0x43, 0xd7, 0x94, 0x03, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -336,10 +334,10 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type QueryClient interface {
-	// Queries a Fortune by index.
+	// Queries a Fortune by owner.
 	Fortune(ctx context.Context, in *QueryFortuneRequest, opts ...grpc.CallOption) (*QueryFortuneResponse, error)
-	// Queries a list of Fortunes items.
-	Fortunes(ctx context.Context, in *QueryFortunesRequest, opts ...grpc.CallOption) (*QueryFortunesResponse, error)
+	// Queries a list of owned fortunes.
+	Fortunes(ctx context.Context, in *QueryOwnedFortunesRequest, opts ...grpc.CallOption) (*QueryOwnedFortunesResponse, error)
 }
 
 type queryClient struct {
@@ -359,8 +357,8 @@ func (c *queryClient) Fortune(ctx context.Context, in *QueryFortuneRequest, opts
 	return out, nil
 }
 
-func (c *queryClient) Fortunes(ctx context.Context, in *QueryFortunesRequest, opts ...grpc.CallOption) (*QueryFortunesResponse, error) {
-	out := new(QueryFortunesResponse)
+func (c *queryClient) Fortunes(ctx context.Context, in *QueryOwnedFortunesRequest, opts ...grpc.CallOption) (*QueryOwnedFortunesResponse, error) {
+	out := new(QueryOwnedFortunesResponse)
 	err := c.cc.Invoke(ctx, "/eightball.v1.Query/Fortunes", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -370,10 +368,10 @@ func (c *queryClient) Fortunes(ctx context.Context, in *QueryFortunesRequest, op
 
 // QueryServer is the server API for Query service.
 type QueryServer interface {
-	// Queries a Fortune by index.
+	// Queries a Fortune by owner.
 	Fortune(context.Context, *QueryFortuneRequest) (*QueryFortuneResponse, error)
-	// Queries a list of Fortunes items.
-	Fortunes(context.Context, *QueryFortunesRequest) (*QueryFortunesResponse, error)
+	// Queries a list of owned fortunes.
+	Fortunes(context.Context, *QueryOwnedFortunesRequest) (*QueryOwnedFortunesResponse, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
@@ -383,7 +381,7 @@ type UnimplementedQueryServer struct {
 func (*UnimplementedQueryServer) Fortune(ctx context.Context, req *QueryFortuneRequest) (*QueryFortuneResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Fortune not implemented")
 }
-func (*UnimplementedQueryServer) Fortunes(ctx context.Context, req *QueryFortunesRequest) (*QueryFortunesResponse, error) {
+func (*UnimplementedQueryServer) Fortunes(ctx context.Context, req *QueryOwnedFortunesRequest) (*QueryOwnedFortunesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Fortunes not implemented")
 }
 
@@ -410,7 +408,7 @@ func _Query_Fortune_Handler(srv interface{}, ctx context.Context, dec func(inter
 }
 
 func _Query_Fortunes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryFortunesRequest)
+	in := new(QueryOwnedFortunesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -422,7 +420,7 @@ func _Query_Fortunes_Handler(srv interface{}, ctx context.Context, dec func(inte
 		FullMethod: "/eightball.v1.Query/Fortunes",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).Fortunes(ctx, req.(*QueryFortunesRequest))
+		return srv.(QueryServer).Fortunes(ctx, req.(*QueryOwnedFortunesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -563,7 +561,7 @@ func (m *QueryFortuneResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryFortunesRequest) Marshal() (dAtA []byte, err error) {
+func (m *QueryOwnedFortunesRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -573,12 +571,12 @@ func (m *QueryFortunesRequest) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *QueryFortunesRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryOwnedFortunesRequest) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryFortunesRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryOwnedFortunesRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -586,7 +584,7 @@ func (m *QueryFortunesRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryFortunesResponse) Marshal() (dAtA []byte, err error) {
+func (m *QueryOwnedFortunesResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -596,20 +594,20 @@ func (m *QueryFortunesResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *QueryFortunesResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryOwnedFortunesResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryFortunesResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryOwnedFortunesResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.Fortunes) > 0 {
-		for iNdEx := len(m.Fortunes) - 1; iNdEx >= 0; iNdEx-- {
+	if len(m.OwnedFortunes) > 0 {
+		for iNdEx := len(m.OwnedFortunes) - 1; iNdEx >= 0; iNdEx-- {
 			{
-				size, err := m.Fortunes[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				size, err := m.OwnedFortunes[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 				if err != nil {
 					return 0, err
 				}
@@ -678,7 +676,7 @@ func (m *QueryFortuneResponse) Size() (n int) {
 	return n
 }
 
-func (m *QueryFortunesRequest) Size() (n int) {
+func (m *QueryOwnedFortunesRequest) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -687,14 +685,14 @@ func (m *QueryFortunesRequest) Size() (n int) {
 	return n
 }
 
-func (m *QueryFortunesResponse) Size() (n int) {
+func (m *QueryOwnedFortunesResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if len(m.Fortunes) > 0 {
-		for _, e := range m.Fortunes {
+	if len(m.OwnedFortunes) > 0 {
+		for _, e := range m.OwnedFortunes {
 			l = e.Size()
 			n += 1 + l + sovQuery(uint64(l))
 		}
@@ -1006,7 +1004,7 @@ func (m *QueryFortuneResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *QueryFortunesRequest) Unmarshal(dAtA []byte) error {
+func (m *QueryOwnedFortunesRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1029,10 +1027,10 @@ func (m *QueryFortunesRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryFortunesRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryOwnedFortunesRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryFortunesRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryOwnedFortunesRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:
@@ -1056,7 +1054,7 @@ func (m *QueryFortunesRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *QueryFortunesResponse) Unmarshal(dAtA []byte) error {
+func (m *QueryOwnedFortunesResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1079,15 +1077,15 @@ func (m *QueryFortunesResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryFortunesResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryOwnedFortunesResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryFortunesResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryOwnedFortunesResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Fortunes", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field OwnedFortunes", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -1114,8 +1112,8 @@ func (m *QueryFortunesResponse) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Fortunes = append(m.Fortunes, Fortune{})
-			if err := m.Fortunes[len(m.Fortunes)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			m.OwnedFortunes = append(m.OwnedFortunes, Fortune{})
+			if err := m.OwnedFortunes[len(m.OwnedFortunes)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

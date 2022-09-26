@@ -32,15 +32,6 @@ var _ types.MsgServer = msgServer{}
 func (k msgServer) FeelingLucky(goCtx context.Context, msg *types.MsgFeelingLucky) (*types.MsgFeelingLuckyResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	fortuneList, _ := k.GetAllFortunes(ctx)
-
-	// check if there is already a fortune belonging to the msg sender, if there is reject the tx
-	for _, fortune := range fortuneList.Fortunes {
-		if fortune.Owner == msg.Sender {
-			return nil, types.ErrAlreadyFortunate
-		}
-	}
-
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, err
@@ -139,7 +130,13 @@ func (k msgServer) ConnectToDex(goCtx context.Context, msg *types.MsgConnectToDe
 
 	k.SetDexTransferChannelID(ctx, res.ChannelId)
 
-	if err := k.icacontrollerKeeper.RegisterInterchainAccount(ctx, msg.ConnectionId, eightballAddr.String()); err != nil {
+	connection, ok := k.ibcKeeper.ConnectionKeeper.GetConnection(ctx, msg.ConnectionId)
+	if !ok {
+		panic("connection does not exist")
+	}
+
+	version := icatypes.NewDefaultMetadataString(msg.ConnectionId, connection.Counterparty.ConnectionId)
+	if err := k.icacontrollerKeeper.RegisterInterchainAccount(ctx, msg.ConnectionId, eightballAddr.String(), version); err != nil {
 		return nil, err
 	}
 

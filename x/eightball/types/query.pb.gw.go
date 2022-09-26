@@ -86,7 +86,7 @@ func local_request_Query_Fortune_0(ctx context.Context, marshaler runtime.Marsha
 }
 
 func request_Query_Fortunes_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryFortunesRequest
+	var protoReq QueryOwnedFortunesRequest
 	var metadata runtime.ServerMetadata
 
 	msg, err := client.Fortunes(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -95,7 +95,7 @@ func request_Query_Fortunes_0(ctx context.Context, marshaler runtime.Marshaler, 
 }
 
 func local_request_Query_Fortunes_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryFortunesRequest
+	var protoReq QueryOwnedFortunesRequest
 	var metadata runtime.ServerMetadata
 
 	msg, err := server.Fortunes(ctx, &protoReq)
