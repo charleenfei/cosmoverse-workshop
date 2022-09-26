@@ -3,7 +3,7 @@ package keeper
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
-	ibcexported "github.com/cosmos/ibc-go/v3/modules/core/exported"
+	ibcexported "github.com/cosmos/ibc-go/v6/modules/core/exported"
 )
 
 // SendPacket implements the ICS4 Wrapper interface
@@ -25,4 +25,12 @@ func (k Keeper) WriteAcknowledgement(
 ) error {
 	// call underlying callback
 	return k.ics4Wrapper.WriteAcknowledgement(ctx, chanCap, packet, ack)
+}
+
+func (k Keeper) GetAppVersion(
+	ctx sdk.Context,
+	portID string,
+	channelID string,
+) (string, bool) {
+	return k.ics4Wrapper.GetAppVersion(ctx, portID, channelID)
 }

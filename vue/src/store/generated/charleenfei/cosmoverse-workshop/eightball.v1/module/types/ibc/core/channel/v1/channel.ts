@@ -210,13 +210,27 @@ export interface PacketState {
 }
 
 /**
+ * PacketId is an identifer for a unique Packet
+ * Source chains refer to packets by source port/channel
+ * Destination chains refer to packets by destination port/channel
+ */
+export interface PacketId {
+  /** channel port identifier */
+  port_id: string;
+  /** channel unique identifier */
+  channel_id: string;
+  /** packet sequence */
+  sequence: number;
+}
+
+/**
  * Acknowledgement is the recommended acknowledgement format to be used by
  * app-specific protocols.
  * NOTE: The field numbers 21 and 22 were explicitly chosen to avoid accidental
  * conflicts with other protobuf message formats used for acknowledgements.
  * The first byte of any message with this format will be the non-ASCII values
  * `0xaa` (result) or `0xb2` (error). Implemented as defined by ICS:
- * https://github.com/cosmos/ics/tree/master/spec/ics-004-channel-and-packet-semantics#acknowledgement-envelope
+ * https://github.com/cosmos/ibc/tree/master/spec/core/ics-004-channel-and-packet-semantics#acknowledgement-envelope
  */
 export interface Acknowledgement {
   result: Uint8Array | undefined;
@@ -937,6 +951,95 @@ export const PacketState = {
       message.data = object.data;
     } else {
       message.data = new Uint8Array();
+    }
+    return message;
+  },
+};
+
+const basePacketId: object = { port_id: "", channel_id: "", sequence: 0 };
+
+export const PacketId = {
+  encode(message: PacketId, writer: Writer = Writer.create()): Writer {
+    if (message.port_id !== "") {
+      writer.uint32(10).string(message.port_id);
+    }
+    if (message.channel_id !== "") {
+      writer.uint32(18).string(message.channel_id);
+    }
+    if (message.sequence !== 0) {
+      writer.uint32(24).uint64(message.sequence);
+    }
+    return writer;
+  },
+
+  decode(input: Reader | Uint8Array, length?: number): PacketId {
+    const reader = input instanceof Uint8Array ? new Reader(input) : input;
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = { ...basePacketId } as PacketId;
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.port_id = reader.string();
+          break;
+        case 2:
+          message.channel_id = reader.string();
+          break;
+        case 3:
+          message.sequence = longToNumber(reader.uint64() as Long);
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): PacketId {
+    const message = { ...basePacketId } as PacketId;
+    if (object.port_id !== undefined && object.port_id !== null) {
+      message.port_id = String(object.port_id);
+    } else {
+      message.port_id = "";
+    }
+    if (object.channel_id !== undefined && object.channel_id !== null) {
+      message.channel_id = String(object.channel_id);
+    } else {
+      message.channel_id = "";
+    }
+    if (object.sequence !== undefined && object.sequence !== null) {
+      message.sequence = Number(object.sequence);
+    } else {
+      message.sequence = 0;
+    }
+    return message;
+  },
+
+  toJSON(message: PacketId): unknown {
+    const obj: any = {};
+    message.port_id !== undefined && (obj.port_id = message.port_id);
+    message.channel_id !== undefined && (obj.channel_id = message.channel_id);
+    message.sequence !== undefined && (obj.sequence = message.sequence);
+    return obj;
+  },
+
+  fromPartial(object: DeepPartial<PacketId>): PacketId {
+    const message = { ...basePacketId } as PacketId;
+    if (object.port_id !== undefined && object.port_id !== null) {
+      message.port_id = object.port_id;
+    } else {
+      message.port_id = "";
+    }
+    if (object.channel_id !== undefined && object.channel_id !== null) {
+      message.channel_id = object.channel_id;
+    } else {
+      message.channel_id = "";
+    }
+    if (object.sequence !== undefined && object.sequence !== null) {
+      message.sequence = object.sequence;
+    } else {
+      message.sequence = 0;
     }
     return message;
   },

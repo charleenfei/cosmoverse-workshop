@@ -5,10 +5,12 @@ import { FortuneList } from "./module/types/eightball/v1/fortunes"
 import { Params } from "./module/types/eightball/v1/params"
 import { QueryParamsRequest } from "./module/types/eightball/v1/query"
 import { QueryParamsResponse } from "./module/types/eightball/v1/query"
+import { MsgSwap } from "./module/types/eightball/v1/swap"
+import { MsgSwapResponse } from "./module/types/eightball/v1/swap"
 import { Workflow } from "./module/types/eightball/v1/workflow"
 
 
-export { Fortune, FortuneList, Params, QueryParamsRequest, QueryParamsResponse, Workflow };
+export { Fortune, FortuneList, Params, QueryParamsRequest, QueryParamsResponse, MsgSwap, MsgSwapResponse, Workflow };
 
 async function initTxClient(vuexGetters) {
 	return await txClient(vuexGetters['common/wallet/signer'], {
@@ -55,6 +57,8 @@ const getDefaultState = () => {
 						Params: getStructure(Params.fromPartial({})),
 						QueryParamsRequest: getStructure(QueryParamsRequest.fromPartial({})),
 						QueryParamsResponse: getStructure(QueryParamsResponse.fromPartial({})),
+						MsgSwap: getStructure(MsgSwap.fromPartial({})),
+						MsgSwapResponse: getStructure(MsgSwapResponse.fromPartial({})),
 						Workflow: getStructure(Workflow.fromPartial({})),
 						
 		},

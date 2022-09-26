@@ -13,10 +13,10 @@ import (
 	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
-	icacontrollerkeeper "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/keeper"
-	transferkeeper "github.com/cosmos/ibc-go/v3/modules/apps/transfer/keeper"
-	porttypes "github.com/cosmos/ibc-go/v3/modules/core/05-port/types"
-	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
+	icacontrollerkeeper "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/controller/keeper"
+	transferkeeper "github.com/cosmos/ibc-go/v6/modules/apps/transfer/keeper"
+	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
+	ibckeeper "github.com/cosmos/ibc-go/v6/modules/core/keeper"
 )
 
 type (

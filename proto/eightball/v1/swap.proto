@@ -1,0 +1,25 @@
+syntax = "proto3";
+package eightball.v1;
+
+// this line is used by starport scaffolding # proto/tx/import
+
+option go_package = "github.com/charleenfei/cosmoverse-workshop/x/eightball/types";
+
+import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
+
+message MsgSwap {
+  string sender = 1;
+  cosmos.base.v1beta1.Coin offer = 2 [(gogoproto.nullable) = false];
+  cosmos.base.v1beta1.Coin minAsk = 3 [(gogoproto.nullable) = false];
+  // information for how to send the tokens to intended receiver
+  string port_id = 4;
+  string channel_id = 5;
+  string receiver = 6;
+}
+
+message MsgSwapResponse {
+uint64 sequence = 1;
+}
+
+// this line is used by starport scaffolding # proto/tx/message

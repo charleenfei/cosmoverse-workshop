@@ -13,11 +13,10 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	simpledextypes "github.com/charleenfei/simple-dex/simple-dex/x/simpledex/types"
-	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
-	transfertypes "github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
-	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
+	icatypes "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/types"
+	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
+	host "github.com/cosmos/ibc-go/v6/modules/core/24-host"
 )
 
 func (k Keeper) OnTransferAck(ctx sdk.Context, transferData transfertypes.FungibleTokenPacketData, packet channeltypes.Packet, ackSuccess bool) error {
@@ -87,7 +86,7 @@ func (k Keeper) OnTransferAck(ctx sdk.Context, transferData transfertypes.Fungib
 
 		// create the MsgSwap to be submitted by the ica controller account on simple-dex
 		// set transfer port and dex channel id to tell simple-dex where to send back funds after they have been exchanged
-		msgSwap := &simpledextypes.MsgSwap{
+		msgSwap := &types.MsgSwap{
 			Sender: eightballICAAddr,
 			Offer:  offer,
 			MinAsk: sdk.Coin{
@@ -154,7 +153,7 @@ func (k Keeper) OnICAAck(ctx sdk.Context, icaData icatypes.InterchainAccountPack
 
 		switch len(txMsgData.Data) {
 		case 1:
-			var swapResponse simpledextypes.MsgSwapResponse
+			var swapResponse types.MsgSwapResponse
 			if err := proto.Unmarshal(txMsgData.Data[0].Data, &swapResponse); err != nil {
 				return err
 			}
